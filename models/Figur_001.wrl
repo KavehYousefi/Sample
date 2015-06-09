@@ -1,0 +1,233 @@
+#VRML V2.0 utf8
+
+########################################################################
+# 
+# Diese VRML-Datei konstruiert eine sehr einfache Figur.
+# 
+# Quellen:
+#    [ACCAD]
+#    Quelle: "http://accad.osu.edu/~pgerstma/class/vnv/resources/info/
+#             AnnotatedVrmlRef/ch3-329.htm"
+#    Thema : "NavigationInfo" verwenden, um die zusaetzliche Beleuchtung
+#            der Vorderseite abzuschalten.
+#    Stand : 16.08.2014
+# 
+# --------------------------------------------------------------------
+# 
+# Datei:    Figur_001.wrl
+# Autor:    Kaveh Yousefi
+# Datum:    03.01.2013
+# Fassung:  1.0
+# 
+########################################################################
+
+
+########################################################################
+# Anlegung allgemeiner Information.                                    #
+########################################################################
+
+WorldInfo
+{
+  title  "Einfache Figur"
+  info
+  [
+    "Zweck:  Eine Figur aus grafischen Primitiven wird konstruiert.",
+    "Autor:  Kaveh Yousefi"
+  ]
+}
+
+NavigationInfo
+{
+  # Schaltet die zusaetzliche Beleuchtung fuer die Vorderseite aus.
+  headlight  FALSE
+}
+
+
+
+########################################################################
+# Anlegung der Definitionen.                                           #
+########################################################################
+
+# Definition eines Auges.
+DEF Auge Shape
+{
+  geometry Sphere
+  {
+    radius  0.2
+  }
+  
+  appearance Appearance
+  {
+    material Material
+    {
+      diffuseColor   0.9  0.9  0.9
+      emissiveColor  0.5  0.5  0.5
+      specularColor  0.7  0.7  0.7
+      shininess      1.0
+    }
+  }
+}
+
+
+# Definition einer Hand.
+DEF Hand Shape
+{
+  geometry Box
+  {
+    size  0.1  0.1  0.1
+  }
+  
+  appearance Appearance
+  {
+    material Material
+    {
+      emissiveColor  1.0  0.0  0.5
+    }
+  }
+}
+
+
+# Definition eines Fusses.
+DEF Fuss Shape
+{
+  geometry Cylinder
+  {
+    radius  0.10
+    height  0.20
+  }
+  
+  appearance Appearance
+  {
+    material Material
+    {
+      emissiveColor  0.00  0.00  0.75
+    }
+  }
+}
+
+
+
+########################################################################
+# Umsetzung der Szene.                                                 #
+########################################################################
+
+# --> Kopf angelegen. --------------------------------------------------
+Transform
+{
+  translation  0.0  0.67  0.0
+  
+  children
+  [
+    # --> Kopfform angelegen. ------------------------------------------
+    Shape
+    {
+      geometry Sphere
+      {
+        radius  0.41
+      }
+      
+      appearance Appearance
+      {
+        material Material
+        {
+          emissiveColor  0.0  0.8  0.6
+        }
+      }
+    }
+    # <-- Kopfform angelegt. -------------------------------------------
+    
+    
+    # --> Linkes Auge anlegen. -----------------------------------------
+    Transform
+    {
+      translation  -0.1  0.11  0.20
+      
+      children
+      [
+        USE Auge
+      ]
+    }
+    # <-- Linkes Auge angelegt. ----------------------------------------
+    
+    # --> Rechtes Auge anlegen. ----------------------------------------
+    Transform
+    {
+      translation  0.1  0.11  0.20
+      
+      children
+      [
+        USE Auge
+      ]
+    }
+    # <-- Rechtes Auge angelegt. ---------------------------------------
+  ]
+}
+# <-- Kopf angelegt. ---------------------------------------------------
+
+
+# --> Rumpf angelegen. -------------------------------------------------
+Shape
+{
+  geometry Sphere
+  {
+    radius  0.5
+  }
+  
+  appearance Appearance
+  {
+    material Material
+    {
+      emissiveColor  0.5  0.0  0.0
+    }
+  }
+}
+# <-- Rumpf angelegt. --------------------------------------------------
+
+
+# --> Rechte Hand anlegen. ---------------------------------------------
+Transform
+{
+  translation  -0.5  0.15  0.0
+  
+  children
+  [
+    USE Hand
+  ]
+}
+# <-- Rechte Hand angelegt. --------------------------------------------
+
+# --> Linke Hand anlegen. ----------------------------------------------
+Transform
+{
+  translation  0.5  0.15  0.0
+  
+  children
+  [
+    USE Hand
+  ]
+}
+# <-- Linke Hand angelegt. ---------------------------------------------
+
+# --> Rechten Fuss anlegen. --------------------------------------------
+Transform
+{
+  translation  -0.12  -0.52  0.00
+  
+  children
+  [
+    USE Fuss
+  ]
+}
+# <-- Rechten Fuss angelegt. -------------------------------------------
+
+# --> Linken Fuss anlegen. ---------------------------------------------
+Transform
+{
+  translation  0.12  -0.52  0.00
+  
+  children
+  [
+    USE Fuss
+  ]
+}
+# <-- Linken Fuss angelegt. --------------------------------------------

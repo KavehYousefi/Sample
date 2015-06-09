@@ -1,0 +1,238 @@
+#VRML V2.0 utf8
+
+# 14.08.2014
+# Short-winged Meadow Katydid (Conocephalus brevipennis): "http://bugguide.net/node/view/571163"
+# VRML, colorIndex, DEF + USE: "http://accad.osu.edu/~pgerstma/class/vnv/resources/info/AnnotatedVrmlRef/ch3-323.htm"
+
+
+WorldInfo
+{
+  title "Short-winged Meadow Katydid"
+  info
+  [
+    "Zweck: Modelliert das Insekt 'Short-winged Meadow Katydid'."
+    "Autor: Kaveh Yousefi"
+  ]
+}
+
+NavigationInfo
+{
+  headlight  FALSE
+}
+
+
+# Rumpf.
+Shape
+{
+  geometry IndexedFaceSet
+  {
+    coord Coordinate
+    {
+      point
+      [
+        -1.00   0.30   0.00   # (0) Kopfspitze.
+        -0.90  -0.30   0.00   # (1) Kinn.
+        -0.10  -0.30   0.10   # (2) Linke  Bauchflanke.
+        -0.10  -0.30  -0.10   # (3) Rechte Bauchflanke.
+         1.00  -0.25   0.00   # (4) Untere Schwanzspitze.
+         1.00  -0.05   0.00   # (5) Obere  Schwanzspitze.
+        -0.10   0.20   0.15   # (6) Linke  Rueckenflanke.
+        -0.10   0.20  -0.15   # (7) Rechte Rueckenflanke.
+      ]
+    }
+    
+    coordIndex
+    [
+      0  1  6  -1             # Linke  Gesichtshaelfte.
+      0  7  1  -1             # Rechte Gesichtshaelfte.
+      0  6  7  -1             # Obere  Kopfseite.
+      1  3  2  -1             # Kinnflaeche.
+      
+      1  2  6  -1             # Linke  vordere Rumpfseite.
+      1  7  3  -1             # Rechte vordere Rumpfseite.
+      
+      2  4  6  -1             # Linke  hintere Rumpfseite.
+      4  3  7  -1             # Rechte hintere Rumpfseite.
+      2  3  4  -1             # Bauchboden.
+      
+      6  4  5  -1             # Linke  Rueckenflaeche.
+      7  5  4  -1             # Rechte Rueckenflaeche.
+      7  6  5  -1             # Obere  Rueckenflaeche.
+    ]
+    
+    colorPerVertex FALSE
+    solid          TRUE
+    
+    color Color
+    {
+      color
+      [
+        1.0  0.0  0.0
+        0.0  1.0  0.0
+        0.0  0.0  1.0
+        1.0  1.0  0.0
+        0.0  1.0  1.0
+      ]
+    }
+    
+    colorIndex
+    [
+      0  1  2  3  4
+      0  1  2  3  4
+      0  1  2  3
+    ]
+  }
+  
+  appearance Appearance
+  {
+    texture ImageTexture
+    {
+      url "brick.jpg"
+    }
+  }
+}
+
+
+# Augen.
+Transform
+{
+  translation  -0.85  0.17  0.00
+  
+  children
+  [
+    Shape
+    {
+      geometry Sphere
+      {
+        radius  0.1
+      }
+      
+      appearance Appearance
+      {
+        material Material
+        {
+          ambientIntensity  1.00  1.00  1.00
+          diffuseColor      0.00  0.20  0.00
+          emissiveColor     0.00  0.00  0.00
+          specularColor     0.00  0.50  0.00
+          shininess         1.00
+          transparency      0.00
+        }
+      }
+    }
+  ]
+}
+
+
+Transform
+{
+  translation  0.40  0.15  0.15
+  
+  children
+  [
+    Shape
+    {
+      geometry DEF Bein IndexedFaceSet
+      {
+        colorPerVertex  FALSE
+        solid           TRUE
+        
+        
+        coord Coordinate
+        {
+          point
+          [
+            -0.45  -0.34   0.00   # ( 0) Hueftgelenk, untere Spitze.
+            -0.50  -0.30   0.05   # ( 1) Hueftgelenk, vorne,  aussen.
+            -0.40  -0.30   0.05   # ( 2) Hueftgelenk, hinten, aussen.
+            -0.50  -0.30  -0.05   # ( 3) Hueftgelenk, vorne,  innen.
+            -0.40  -0.30  -0.05   # ( 4) Hueftgelenk, hinten, innen.
+            
+             0.00   0.40   0.00   # ( 5) Kniegelenk.
+             
+             0.40  -0.40   0.02   # ( 6) Fussgelenk, vorne,  aussen.
+             0.50  -0.40   0.02   # ( 7) Fussgelenk, hinten, aussen.
+             0.40  -0.40  -0.02   # ( 8) Fussgelenk, vorne,  innen.
+             0.50  -0.40  -0.02   # ( 9) Fussgelenk, hinten, innen.
+             
+             0.50  -0.40   0.02   # (10) Fuss, unten, vorne,  aussen.
+             0.70  -0.40   0.02   # (11) Fuss, unten, hinten, aussen.
+             0.58  -0.32   0.01   # (12) Fuss, oben,          aussen.
+             0.50  -0.40  -0.02   # (13) Fuss, unten, vorne,  innen.
+             0.70  -0.40  -0.02   # (14) Fuss, unten, hinten, innen.
+             0.58  -0.32  -0.01   # (15) Fuss, oben,          innen.
+          ]
+        }
+        
+        coordIndex
+        [
+           0   1   3  -1          # Gelenkspitze, Vorderseite.
+           0   2   1  -1          # Gelenkspitze, Aussenseite.
+           0   4   2  -1          # Gelenkspitze, Rueckseite.
+           0   3   4  -1          # Gelenkspitze, Innenseite.
+          
+           1   2   5  -1          # Oberschenkel, Aussenseite.
+           4   3   5  -1          # Oberschenkel, Innenseite.
+           3   1   5  -1          # Oberschenkel, Oberseite.
+           2   4   5  -1          # Oberschenkel, Unterseite.
+          
+           5   6   7  -1          # Unterschenkel, Aussenseite.
+           5   9   8  -1          # Unterschenkel, Innenseite.
+           5   7   9  -1          # Unterschenkel, Oberseite.
+           5   8   6  -1          # Unterschenkel, Unterseite.
+          
+           6   8   9  -1          # Fussgelenk, Unterseite, links.
+           9   7   6  -1          # Fussgelenk, Unterseite, rechts.
+          
+          10  11  12  -1          # Fuss, Aussenseite.
+          14  13  15  -1          # Fuss, Innenseite.
+          12  15  13  -1          # Fuss, Vorderseite, links.
+          13  10  12  -1          # Fuss, Vorderseite, rechts.
+          12  11  14  -1          # Fuss, Rueckseite, links.
+          14  15  12  -1          # Fuss, Rueckseite, rechts.
+          10  13  14  -1          # Fuss, Unterseite,  links.
+          14  11  10  -1          # Fuss, Unterseite,  rechts.
+        ]
+        
+        
+        color Color
+        {
+          color
+          [
+            1.00  0.00  0.00
+            0.00  1.00  0.00
+            0.00  0.00  1.00
+            1.00  1.00  0.00
+            0.00  1.00  1.00
+          ]
+        }
+        
+        colorIndex
+        [
+          0  1  2  3              # Gelenkspitze-Flaechen.
+          0  1  2  3              # Oberschenkel-Flaechen.
+          0  1  2  3              # Unterschenkel-Flaechen.
+          0  1  2  3
+          0  1  2  3
+          0  1  2  3
+        ]
+      }
+    }
+  ]
+}
+
+
+Transform
+{
+  translation  0.40  0.15  -0.15
+  
+  children
+  [
+    Shape
+    {
+      geometry USE Bein
+    }
+  ]
+}
+
+

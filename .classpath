@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NyARToolkit"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Java/Java3D/1.5.2/lib/ext/j3dcore.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Java/Java3D/1.5.2/lib/ext/j3dutils.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Java/Java3D/1.5.2/lib/ext/vecmath.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Java/external_libs/j3dvrml97/j3d-vrml97.jar"/>
+	<classpathentry kind="lib" path="C:/Xj3D/jars/xj3d-all.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/JMF2.1.1e/lib/custom.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/JMF2.1.1e/lib/customizer.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/JMF2.1.1e/lib/jffmpeg-1.1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/JMF2.1.1e/lib/jmf.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/JMF2.1.1e/lib/mediaplayer.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/JMF2.1.1e/lib/multiplayer.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/JMF2.1.1e/lib/sound.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Java/external_libs/NCSAPortfolio/portfolio.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
