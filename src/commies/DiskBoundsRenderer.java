@@ -57,6 +57,7 @@ public class DiskBoundsRenderer
 //    collisionDetector.addCollisionListener (listener);
 //  }
 //  
+  
 //  public void removeCollisionListener (CollisionListener listener)
 //  {
 //    collisionDetector.removeCollisionListener (listener);
