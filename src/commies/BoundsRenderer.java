@@ -17,20 +17,22 @@ public class BoundsRenderer
 {
   private float TRANSPARENCY_VALUE = 0.75f;
   
+  private CharacterUserData userData;
   private Bounds            bounds;
   private Appearance        appearance;
-  private CollisionDetector collisionDetector;
+//  private CollisionDetector collisionDetector;
   private Sphere            sphere;
   
   
-  public BoundsRenderer (Bounds bounds)
+  public BoundsRenderer (Bounds bounds, CharacterUserData userData)
   {
     this.bounds            = new BoundingSphere    (bounds);
     this.appearance        = createAppearance      ();
     this.sphere            = getSphereFromBounds   (this.bounds);
-    this.collisionDetector = new CollisionDetector (sphere);
+//    this.collisionDetector = new CollisionDetector (sphere);
+    this.userData          = userData;
     
-    this.sphere.setUserData ("AX");
+    this.sphere.setUserData (userData);
 //    this.collisionDetector.addCollisionListener (null);
   }
   
@@ -52,6 +54,7 @@ public class BoundsRenderer
     rootNode = new BranchGroup ();
     
     rootNode.addChild (sphere);
+//    rootNode.addChild (collisionDetector);
     
     return rootNode;
   }
@@ -63,15 +66,15 @@ public class BoundsRenderer
   }
   
   
-  public void addCollisionListener (CollisionListener listener)
-  {
-    collisionDetector.addCollisionListener (listener);
-  }
-  
-  public void removeCollisionListener (CollisionListener listener)
-  {
-    collisionDetector.removeCollisionListener (listener);
-  }
+//  public void addCollisionListener (CollisionListener listener)
+//  {
+//    collisionDetector.addCollisionListener (listener);
+//  }
+//  
+//  public void removeCollisionListener (CollisionListener listener)
+//  {
+//    collisionDetector.removeCollisionListener (listener);
+//  }
   
   
   private Appearance createAppearance ()

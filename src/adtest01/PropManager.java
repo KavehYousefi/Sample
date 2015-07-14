@@ -52,8 +52,13 @@ import java.text.DecimalFormat;
 
 import javax.media.j3d.*;
 import javax.vecmath.*;
+
+import org.web3d.j3d.loaders.Web3DLoader;
+
 import com.sun.j3d.loaders.*;
 import com.sun.j3d.loaders.objectfile.ObjectFile;
+
+
 
 // Portfolio loader packages
 import ncsa.j3d.loaders.*;
@@ -86,19 +91,18 @@ public class PropManager
   private double scale;              // current object scaling
 
   private DecimalFormat df;    // for debugging
-
-
-  public PropManager(String loadFnm, boolean hasCoordsInfo)
+  
+  
+  public PropManager (String loadFnm, boolean hasCoordsInfo)
   {
     filename = loadFnm;
-    xRot = 0.0; yRot = 0.0; zRot = 0.0;    // initial loaded object settings
-    rotInfo = new ArrayList<Integer>();
-    scale = 1.0;
-
-    t3d = new Transform3D();     // setup reusable Transform3D objects
-    chgT3d = new Transform3D();
-
-    df = new DecimalFormat("0.###");  // 3 dp
+    xRot     = 0.0; yRot = 0.0; zRot = 0.0;    // initial loaded object settings
+    rotInfo  = new ArrayList<Integer>();
+    scale    = 1.0;
+    
+    t3d      = new Transform3D();     // setup reusable Transform3D objects
+    chgT3d   = new Transform3D();
+    df       = new DecimalFormat("0.###");  // 3 dp
 
     loadFile(loadFnm);
     if (hasCoordsInfo)     // load in coords info also
@@ -119,61 +123,80 @@ public class PropManager
         moveTG-->rotTG-->scaleTG-->objBoundsTG-->object
   */
   { System.out.println("Loading model file: models/" + fnm);
-
-    String ext = getExtension(fnm);
-    Scene s = null;
+    
+    BranchGroup    sceneGroup    = null;
+    TransformGroup objBoundsTG   = null;
+    BoundingSphere objBounds     = null;
+    String         fileExtension = null;
+    String         filePath      = null;
+    Scene          loadedScene   = null;
+    
+    fileExtension = getExtension (fnm);
+    filePath      = "models/" + fnm;
+    
     try
     {
       // the file is a wavefront model
-      if (ext.equals("obj"))
+      if (fileExtension.equals ("obj"))
       {
         // System.out.println("Loading obj file");
         ObjectFile of = new ObjectFile ();
-        of.setFlags(ObjectFile.RESIZE | ObjectFile.TRIANGULATE | ObjectFile.STRIPIFY);
-        s = of.load("models/"+fnm);
+        
+        of.setFlags (ObjectFile.RESIZE      |
+                     ObjectFile.TRIANGULATE |
+                     ObjectFile.STRIPIFY);
+        loadedScene = of.load (filePath);
+      }
+      // Use the XJ3D loader for VRML and X3D files.
+      else if ((fileExtension.equals ("wrl")) || (fileExtension.equals ("x3d")))
+      {
+        Web3DLoader vrml97Loader = null;
+        
+        vrml97Loader = new Web3DLoader   ();
+        loadedScene  = vrml97Loader.load (filePath);
       }
       // use Portfolio loader for other models
       else
       {
-        ModelLoader modelLoader = new ModelLoader();
-        s = modelLoader.load("models/"+fnm);   // handles many types of file
+        ModelLoader modelLoader = new ModelLoader ();
+        loadedScene = modelLoader.load (filePath);   // handles many types of file
       }
     }
     catch (Exception e)
     {
-      System.err.println(e);
-      System.exit(1);
+      System.err.println (e);
+      System.exit        (1);
     }
     
     // get the branch group for the loaded object
-    BranchGroup sceneGroup = s.getSceneGroup();
-
+    sceneGroup = loadedScene.getSceneGroup ();
+    
     // create a transform group for the object's bounding sphere
-    TransformGroup objBoundsTG = new TransformGroup();
-    objBoundsTG.addChild( sceneGroup );
-
+    objBoundsTG = new TransformGroup ();
+    objBoundsTG.addChild (sceneGroup);
+    
     // resize loaded object's bounding sphere (and maybe rotate)
-    BoundingSphere objBounds = (BoundingSphere) sceneGroup.getBounds();
-    setBSPosn(objBoundsTG, objBounds.getRadius(), ext);
-
+    objBounds = (BoundingSphere) sceneGroup.getBounds();
+    setBSPosn (objBoundsTG, objBounds.getRadius(), fileExtension);
+    
     // create a transform group for scaling the object
     scaleTG = new TransformGroup();
     scaleTG.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
     scaleTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
     scaleTG.addChild( objBoundsTG );
-
+    
     // create a transform group for rotating the object
     rotTG = new TransformGroup();
     rotTG.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
     rotTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
     rotTG.addChild( scaleTG );
-
+    
     // create a transform group for moving the object
     moveTG = new TransformGroup();
     moveTG.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
     moveTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
     moveTG.addChild( rotTG );
-
+    
   } // end of loadFile()
 
 

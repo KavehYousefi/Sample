@@ -1,0 +1,691 @@
+#VRML V2.0 utf8
+
+########################################################################
+# 
+# Diese VRML-Datei modelliert einen Fussballspieler.
+# 
+# 
+# Quellen:
+#   [C3.HU]
+#    Quelle: "http://www.c3.hu/cryptogram/vrmltut/part3.html"
+#    Thema : "DEF" an einer Gruppe ("group", "Transform") anwenden.
+#    Stand : 20.04.2014
+#    [ACCAD]
+#    Quelle: "http://accad.osu.edu/~pgerstma/class/vnv/resources/info/
+#             AnnotatedVrmlRef/ch3-329.htm"
+#    Thema : "NavigationInfo" verwenden, um die zusaetzliche Beleuchtung
+#            der Vorderseite abzuschalten.
+#    Stand : 16.08.2014
+# 
+# --------------------------------------------------------------------
+# 
+# Datei:    Figur_002.wrl
+# Autor:    Kaveh Yousefi
+# Datum:    20.04.2014
+# Fassung:  1.0
+# 
+########################################################################
+
+
+# META "creator" "Kaveh Yousefi"
+# META "title"   "Figur_002.wrl"
+
+
+WorldInfo
+{
+  title "Fussball-Spieler"
+  info
+  [
+    "Zweck: Modelliert einen Fussball-Spieler.",
+    "Autor: Kaveh Yousefi"
+  ]
+}
+
+NavigationInfo
+{
+  # Schaltet die zusaetzliche Beleuchtung fuer die Vorderseite aus.
+  headlight  FALSE
+}
+
+
+DEF fussballSpieler Group
+{
+  children
+  [
+    #>> Kopf-Gruppe startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    DEF kopfWrapperGruppe Transform
+    {
+      children
+      [
+        DEF kopfInnereGruppe Transform
+        {
+          translation 0.00  0.60  0.00
+          children
+          [
+            #>> Kopf-Form startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            DEF kopfShape Shape
+            {
+              geometry   Sphere
+              {
+                radius 0.40
+              }
+              
+              appearance Appearance
+              {
+                material Material
+                {
+                  # emissiveColor 0.80  0.60  0.00
+                  emissiveColor 0.996  0.756  0.407  # RGB(254, 193, 104)
+                }
+                
+                texture ImageTexture
+                {
+                  url     "kopf-textur_011-c.png"
+                  repeatS TRUE
+                  repeatT TRUE
+                }
+              }
+            }
+            #<< Kopf-Form endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+          ]
+        }
+      ]
+    }
+    #<< Kopf-Gruppe endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    
+    
+    DEF halsWrapperGruppe Transform
+    {
+      children
+      [
+        DEF halsInnereGruppe Transform
+        {
+          translation 0.00  0.19  0.00
+          children
+          [
+            DEF halsShape Shape
+            {
+              geometry Cylinder
+              {
+                radius 0.05
+                height 0.10
+              }
+              
+              appearance Appearance
+              {
+                material Material
+                {
+                  emissiveColor 0.996  0.756  0.407
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+    
+    
+    
+    
+    #>> Rumpf-Gruppe startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    DEF rumpfWrapperGruppe Transform
+    {
+      children
+      [
+        DEF rumpfInnereGruppe Transform
+        {
+          scale    1.00  1.00  0.80
+          children
+          [
+            #>> Rumpf-Form startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            DEF oberkoerperGruppe Transform
+            {
+              children
+              [
+                DEF oeberkoerperShape Shape
+                {
+                  geometry   Cylinder
+                  {
+                    radius 0.20
+                    height 0.35
+                  }
+                  
+                  appearance Appearance
+                  {
+                    material Material
+                    {
+                      emissiveColor 0.00  0.80  0.80
+                      #diffuseColor  0.00  0.50  0.50
+                      #specularColor 0.00  0.00  0.00
+                      #shininess     0.00
+                    }
+                  }
+                }
+              ]
+            }
+            #<< Rumpf-Form endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            
+            DEF unterkoerperGruppe Transform
+            {
+              translation 0.00  -0.20  0.00
+              scale       1.00   1.00  0.95
+              children
+              [
+                DEF unterkoerperShape Shape
+                {
+                  geometry   Cylinder
+                  {
+                    radius 0.17
+                    height 0.15
+                  }
+                  
+                  appearance Appearance
+                  {
+                    material Material
+                    {
+                      emissiveColor 0.60  0.60  0.60
+                      diffuseColor  0.20  0.20  0.20
+                      specularColor 0.00  0.00  0.00
+                      shininess     0.00
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        #<< Rumpf-Gruppe endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      ]
+    }
+    
+    
+    DEF linkeSchulterWrapperGruppe Transform
+    {
+      children
+      [
+        DEF linkeSchulterInnerGruppe Transform
+        {
+          translation -0.20  0.10  0.00
+          scale        1.20  1.00  1.00
+          children
+          [
+            DEF linkeSchulterShape Shape
+            {
+              geometry Sphere
+              {
+                radius 0.06
+              }
+              
+              appearance Appearance
+              {
+                material Material
+                {
+                  emissiveColor 0.00  0.80  0.80
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+    
+    DEF linkerArmWrapperGruppe Transform
+    {
+      children
+      [
+        DEF linkerArmInnerGruppe Transform
+        {
+          translation -0.23  0.025  0.00
+          scale        0.80  1.000  1.00
+          children
+          [
+            DEF linkerOberarmGruppe Transform
+            {
+              children
+              [
+                DEF linkerOberarmShape Shape
+                {
+                  geometry Cylinder
+                  {
+                    radius 0.05
+                    height 0.15
+                  }
+                  
+                  appearance Appearance
+                  {
+                    material Material
+                    {
+                      #emissiveColor 1.00 0.00 0.60
+                      emissiveColor 0.00  0.80  0.80
+                    }
+                  }
+                }
+              ]
+            }
+            
+            
+            DEF linkerUnterarmGruppe Transform
+            {
+              translation 0.00  -0.13  0.00
+              children
+              [
+                DEF linkerUnterarmShape Shape
+                {
+                  geometry Cylinder
+                  {
+                    radius 0.04
+                    height 0.13
+                  }
+                  
+                  appearance Appearance
+                  {
+                    material Material
+                    {
+                      emissiveColor 0.80  0.60  0.00
+                    }
+                  }
+                }
+                
+                DEF linkeHandGruppe Transform
+                {
+                  translation 0.00  -0.06  0.00
+                  scale       1.00   0.90  1.00
+                  children
+                  [
+                    DEF linkeHandShape Shape
+                    {
+                      geometry Sphere
+                      {
+                        radius 0.06
+                      }
+                      
+                      appearance Appearance
+                      {
+                        material Material
+                        {
+                          emissiveColor 0.80  0.60  0.00
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    
+    
+    
+    DEF rechteSchulterWrapperGruppe Transform
+    {
+      children
+      [
+        DEF rechteSchulterInnerGruppe Transform
+        {
+          translation 0.20  0.10  0.00
+          scale       1.20  1.00  1.00
+          children
+          [
+            DEF rechteSchulterShape Shape
+            {
+              geometry Sphere
+              {
+                radius 0.06
+              }
+              
+              appearance Appearance
+              {
+                material Material
+                {
+                  emissiveColor 0.00  0.80  0.80
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+    
+    DEF rechterArmWrapperGruppe Transform
+    {
+      children
+      [
+        DEF rechterArmInnerGruppe Transform
+        {
+          translation 0.23  0.025  0.00
+          scale       0.80  1.000  1.00
+          children
+          [
+            DEF rechterOberarmGruppe Transform
+            {
+              children
+              [
+                DEF rechterOberarmShape Shape
+                {
+                  geometry Cylinder
+                  {
+                    radius 0.05
+                    height 0.15
+                  }
+                  
+                  appearance Appearance
+                  {
+                    material Material
+                    {
+                      #emissiveColor 1.00 0.00 0.60
+                      emissiveColor 0.00  0.80  0.80
+                    }
+                  }
+                }
+              ]
+            }
+            
+            
+            DEF rechterUnterarmGruppe Transform
+            {
+              translation 0.00  -0.13  0.00
+              children
+              [
+                DEF rechterUnterarmShape Shape
+                {
+                  geometry Cylinder
+                  {
+                    radius 0.04
+                    height 0.13
+                  }
+                  
+                  appearance Appearance
+                  {
+                    material Material
+                    {
+                      emissiveColor 0.80  0.60  0.00
+                    }
+                  }
+                }
+                
+                DEF rechteHandGruppe Transform
+                {
+                  translation 0.00  -0.06  0.00
+                  scale       1.00   0.90  1.00
+                  children
+                  [
+                    DEF rechteHandShape Shape
+                    {
+                      geometry Sphere
+                      {
+                        radius 0.06
+                      }
+                      
+                      appearance Appearance
+                      {
+                        material Material
+                        {
+                          emissiveColor 0.80  0.60  0.00
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    
+    
+    
+    
+    #>> Linkes-Bein-Gruppe startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    DEF linkesBeinWrapperGruppe Transform
+    {
+      children
+      [
+        DEF linkesHosenbeinInnerGruppe Transform
+        {
+          translation -0.08 -0.20 0.00
+          children
+          [
+            DEF linkesHosenbeinShape Shape
+            {
+              geometry Cylinder
+              {
+                radius 0.09
+                height 0.26
+              }
+              
+              appearance Appearance
+              {
+                material Material
+                {
+                  emissiveColor 0.60  0.60  0.60
+                  diffuseColor  0.20  0.20  0.20
+                  specularColor 0.00  0.00  0.00
+                  shininess     0.00
+                }
+              }
+            }
+          ]
+        }
+        
+        #>> Linkes Bein - innere Gruppe startet. >>>>>>>>>>>>>>>>>>>>>>>
+        DEF linkesBeinInnerGruppe Transform
+        {
+          translation -0.08  -0.30  0.00
+          children
+          [
+            #>> Linkes-Bein-Form startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            DEF linkesBeinShape Shape
+            {
+              geometry   Cylinder
+              {
+                radius 0.065
+                height 0.40
+              }
+              
+              appearance Appearance
+              {
+                material Material
+                {
+                  emissiveColor 0.80  0.60  0.00
+                }
+              }
+            }
+            #<< Linkes-Bein-Form endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            
+            #>> Linke-Socke-Form startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            DEF linkeSockeGruppe Transform
+            {
+              # Berechnung der y-Translation:
+              #   Haelfte der Beinhoehe minus Haelfte der Sockenhoehe.
+              translation 0.00  -0.14  0.00
+              children
+              [
+                DEF linkeSockeShape Shape
+                {
+                  geometry   Cylinder
+                  {
+                    radius 0.07
+                    height 0.12
+                  }
+                  
+                  appearance Appearance
+                  {
+                    material Material
+                    {
+                      emissiveColor 1.00  1.00  1.00
+                    }
+                  }
+                }
+              ]
+            }
+            #<< Linke-Socke-Form endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            
+            DEF linkerFussWrapperGruppe Transform
+            {
+              children
+              [
+                DEF linkerFussInnerGruppe Transform
+                {
+                  translation 0.00  -0.20  0.025
+                  scale       1.00   1.00  1.350
+                  
+                  children
+                  [
+                    DEF linkerFussShape Shape
+                    {
+                      geometry Cylinder
+                      {
+                        radius 0.08
+                        height 0.05
+                      }
+                      
+                      appearance Appearance
+                      {
+                        material Material
+                        {
+                          emissiveColor 0.0  0.0  0.0
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        #<< Linkes Bein - innere Gruppe endet. <<<<<<<<<<<<<<<<<<<<<<<<<
+      ]
+    }
+    #<< Linkes-Bein-Gruppe endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    
+    
+    #>> Rechtes-Bein-Gruppe startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    DEF rechtesBeinWrapperGruppe Transform
+    {
+      children
+      [
+        DEF rechtesHosenbeinInnerGruppe Transform
+        {
+          translation 0.08 -0.20 0.00
+          children
+          [
+            DEF rechtesHosenbeinShape Shape
+            {
+              geometry Cylinder
+              {
+                radius 0.09
+                height 0.26
+              }
+              
+              appearance Appearance
+              {
+                material Material
+                {
+                  emissiveColor 0.60  0.60  0.60
+                  diffuseColor  0.20  0.20  0.20
+                  specularColor 0.00  0.00  0.00
+                  shininess     0.00
+                }
+              }
+            }
+          ]
+        }
+        
+        #>> Rechtes Bein - innere Gruppe startet. >>>>>>>>>>>>>>>>>>>>>>
+        DEF rechtesBeinInnerGruppe Transform
+        {
+          translation 0.08  -0.30  0.00
+          children
+          [
+            #>> Rechtes-Bein-Form startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            DEF rechtesBeinShape Shape
+            {
+              geometry   Cylinder
+              {
+                radius 0.065
+                height 0.40
+              }
+              
+              appearance Appearance
+              {
+                material Material
+                {
+                  emissiveColor 0.80  0.60  0.00
+                }
+              }
+            }
+            #<< Rechtes-Bein-Form endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            
+            #>> Rechte-Socke-Form startet. >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            DEF rechteSockeGruppe Transform
+            {
+              # Berechnung der y-Translation:
+              #   Haelfte der Beinhoehe minus Haelfte der Sockenhoehe.
+              translation 0.00  -0.14  0.00
+              children
+              [
+                DEF rechteSockeShape Shape
+                {
+                  geometry   Cylinder
+                  {
+                    radius 0.07
+                    height 0.12
+                  }
+                  
+                  appearance Appearance
+                  {
+                    material Material
+                    {
+                      emissiveColor 1.00  1.00  1.00
+                    }
+                  }
+                }
+              ]
+            }
+            #<< Rechte-Socke-Form endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            
+            DEF rechterFussWrapperGruppe Transform
+            {
+              children
+              [
+                DEF rechterFussInnerGruppe Transform
+                {
+                  translation 0.00  -0.20  0.025
+                  scale       1.00   1.00  1.350
+                  
+                  children
+                  [
+                    DEF rechterFussShape Shape
+                    {
+                      geometry Cylinder
+                      {
+                        radius 0.08
+                        height 0.05
+                      }
+                      
+                      appearance Appearance
+                      {
+                        material Material
+                        {
+                          emissiveColor 0.0  0.0  0.0
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        #<< Rechtes Bein - innere Gruppe endet. <<<<<<<<<<<<<<<<<<<<<<<<
+      ]
+    }
+    #<< Rechtes-Bein-Gruppe endet. <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  ]
+}
+

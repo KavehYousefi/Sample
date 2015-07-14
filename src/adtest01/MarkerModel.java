@@ -13,21 +13,15 @@ package adtest01;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-//import java.util.*;
-
-
 
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
+import commies.ActiveMark;
 import commies.BoundsRenderer;
-
-//import jp.nyatla.nyartoolkit.java3d.utils.*;
+import commies.CharacterUserData;
 import jp.nyatla.nyartoolkit.core.*;
-//import jp.nyatla.nyartoolkit.core.param.NyARParam;
 import jp.nyatla.nyartoolkit.core.transmat.NyARTransMatResult;
-//import jp.nyatla.nyartoolkit.detector.*;
-//import jp.nyatla.nyartoolkit.core.types.*;
 
 
 
@@ -37,12 +31,12 @@ public class MarkerModel
   private final double MARKER_SIZE = 0.095;    // 95 cm width and height in Java 3D world units
 
 
-  private String markerName, modelName;
+  private String   markerName, modelName;
   private NyARCode markerInfo = null;     // NYArToolkit marker details
 
   private TransformGroup moveTg;      // for moving the marker model
 
-  private Switch visSwitch;           // for changing the model's visibility
+  private Switch  visSwitch;           // for changing the model's visibility
   private boolean isVisible;
 
   private SmoothMatrix sMat;          // for smoothing the transforms applied to the model
@@ -56,6 +50,10 @@ public class MarkerModel
   // @TODO Added by me.
   private BoundsRenderer interactionBounds;
   
+  private boolean    canAct;
+  private int        playerNumber;
+  private boolean    isMarked;
+  private ActiveMark activeMark;
   
   
   public MarkerModel
@@ -68,12 +66,12 @@ public class MarkerModel
   {
     markerName = markerFnm;
     // remove filename extension
-    modelName  = modelFnm.substring (0, modelFnm.lastIndexOf('.'));
+    modelName  = modelFnm.substring (0, modelFnm.lastIndexOf ('.'));
 
     // build a branch for the model: TG --> Switch --> TG --> model
 
     // load the model, with scale and coords info
-    TransformGroup modelTG = loadModel(modelFnm, scale, hasCoords);
+    TransformGroup modelTG = loadModel (modelFnm, scale, hasCoords);
 
     // create switch for model visibility 
     visSwitch = new Switch  ();
@@ -83,15 +81,31 @@ public class MarkerModel
     isVisible = false;
     
     
-    interactionBounds = new BoundsRenderer (new BoundingSphere (modelTG.getBounds ()));
-    modelTG.addChild (interactionBounds.getRootNode ());
+    interactionBounds = new BoundsRenderer
+    (
+      new BoundingSphere    (modelTG.getBounds ()),
+      new CharacterUserData (0, 0)
+    );
+//    modelTG.addChild (interactionBounds.getRootNode ());
     interactionBounds.setColor (new Color3f (1.0f, 1.0f, 0.0f));
+    this.canAct = false;
+    this.isMarked = false;
+    this.activeMark = new ActiveMark ();
+    this.activeMark.setPosition (new Point3d  (0.000, 0.000, 0.100));
+    this.activeMark.setScaling  (new Vector3d (0.015, 0.030, 0.015));
     
     
     // create transform group for positioning the model
     moveTg = new TransformGroup ();
     moveTg.setCapability        (TransformGroup.ALLOW_TRANSFORM_WRITE);  // so this tg can change
     moveTg.addChild             (visSwitch);
+    
+    moveTg.addChild (activeMark.getRootNode ());
+    
+//    BoundingBox modelBounds = new BoundingBox (moveTg.getBounds ());
+//    Point3d     modelUpperCorner = new Point3d ();
+//    modelBounds.getLower (modelUpperCorner);
+//    System.out.println (modelUpperCorner);
     
     // load marker info
     try
@@ -137,32 +151,77 @@ public class MarkerModel
     this.interactionBounds = interactionBounds;
   }
   
+  public boolean canAct ()
+  {
+    return canAct;
+  }
+  
+  public void setCanAct (boolean canAct)
+  {
+    this.canAct = canAct;
+  }
+  
+  public int getPlayerNumber ()
+  {
+    return playerNumber;
+  }
+  
+  public void setPlayerNumber (int playerNumber)
+  {
+    this.playerNumber = playerNumber;
+  }
+  
+  public void setMarked (boolean isMarked)
+  {
+    if (isMarked)
+    {
+      activeMark.show ();
+    }
+    else
+    {
+      activeMark.hide ();
+    }
+  }
+  
+  public ActiveMark getActiveMark ()
+  {
+    return activeMark;
+  }
+  
+  
+  
+  public String getModelName ()
+  {
+    return modelName;
+  }
+  
+  
   
   
   private TransformGroup loadModel(String modelFnm, double scale, boolean hasCoords)
   // load the model, rotating and scaling it
   {
-    PropManager propMan = new PropManager(modelFnm, hasCoords);  
-
+    PropManager propMan = new PropManager (modelFnm, hasCoords);  
+    
     // get the TG for the prop (model)
     TransformGroup propTG = propMan.getTG();
 
     // rotate and scale the prop
-    Transform3D modelT3d = new Transform3D();
-    modelT3d.rotX( Math.PI/2.0 );    
+    Transform3D modelT3d = new Transform3D ();
+    modelT3d.rotX (Math.PI/2.0);    
          // the prop lies flat on the marker; rotate forwards 90 degrees so it is standing
-    Vector3d scaleVec = calcScaleFactor(propTG, scale);   // scale the prop
-    modelT3d.setScale( scaleVec );
+    Vector3d scaleVec = calcScaleFactor (propTG, scale);   // scale the prop
+    modelT3d.setScale (scaleVec);
 
-    TransformGroup modelTG = new TransformGroup(modelT3d);
-    modelTG.addChild(propTG);
+    TransformGroup modelTG = new TransformGroup (modelT3d);
+    modelTG.addChild (propTG);
 
     return modelTG;
   }  // end of loadModel()
 
 
 
-  private Vector3d calcScaleFactor(TransformGroup modelTG, double scale)
+  private Vector3d calcScaleFactor (TransformGroup modelTG, double scale)
   // Scale the prop based on its original bounding box size
   {
      BoundingBox boundbox = new BoundingBox (modelTG.getBounds ());

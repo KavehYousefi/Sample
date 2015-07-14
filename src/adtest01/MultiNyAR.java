@@ -25,8 +25,15 @@ import java.io.*;
 
 import javax.swing.*;
 
+import collision.CollisionEvent;
+import collision.CollisionListener;
+
 import com.sun.j3d.utils.universe.*;
-//import com.sun.j3d.utils.geometry.*;
+
+import commies.ColorConstants;
+import commies.Message3D;
+import commies.ModelAppearanceAssigner;
+import commies.QuickShaderAppearance;
 
 import javax.media.j3d.*;
 import javax.vecmath.*;
@@ -37,11 +44,13 @@ import jp.nyatla.nyartoolkit.java3d.utils.*;
 
 
 @SuppressWarnings ({"serial"})
-public class MultiNyAR extends JFrame
+public class MultiNyAR
+extends      JFrame
+implements   CollisionListener
 {
   private final String PARAMS_FNM = "Data/camera_para.dat";
 
-  private static final int PWIDTH = 320;   // size of panel
+  private static final int PWIDTH  = 320;   // size of panel
   private static final int PHEIGHT = 240; 
 
 //  private static final double SHAPE_SIZE = 0.02; 
@@ -50,21 +59,36 @@ public class MultiNyAR extends JFrame
 
   private J3dNyARParam cameraParams;
   private JTextArea    statusTA;
-
+  
+  private Message3D    message3D;
+  
+  
+  private int          activePlayer;
+  private long         lastCollisionTimestamp;
+  private DetectMarkers detectMarkers;
 
 
   public MultiNyAR()
   {
     super ("Multiple markers NyARToolkit Example");
-
-    cameraParams = readCameraParams(PARAMS_FNM);
-
+    
+    
+    activePlayer           = 1;
+    lastCollisionTimestamp = 0;
+    
+    message3D = new Message3D ();
+    message3D.setPosition     (new Point3d (0.0, 0.0, 0.0));
+    this.detectMarkers = new DetectMarkers (this);
+    
+    
+    cameraParams = readCameraParams (PARAMS_FNM);
+    
     Container cp = getContentPane ();
     // Create a JPanel in the center of JFrame.
     JPanel    p  = new JPanel     ();
     
-    p.setLayout        (new BorderLayout());
-    p.setPreferredSize (new Dimension(PWIDTH, PHEIGHT));
+    p.setLayout        (new BorderLayout ());
+    p.setPreferredSize (new Dimension (PWIDTH, PHEIGHT));
     cp.add             (p, BorderLayout.CENTER);
     
     // put the 3D canvas inside the JPanel
@@ -80,9 +104,107 @@ public class MultiNyAR extends JFrame
     pack                     ();
     setVisible               (true);
   }  // end of MultiNyAR()
-
-
-
+  
+  
+  
+  
+  @Override
+  public void collisionStarted (CollisionEvent event)
+  {
+//    message3D.setText ("Collision detected.");
+//    message3D.showFor (1000);
+    
+    MarkerModel observingModel = event.getObservingModel ();
+    MarkerModel observedModel  = event.getObservedModel  ();
+    
+//    System.out.println (observingModel.getPlayerNumber () + " -- " + observedModel.getPlayerNumber ());
+    
+    if (observingModel != null)
+    {
+      // Enemy unit is not null?
+      if (observedModel != null)
+      {
+        final long MINIMUM_COLLISION_IGNORE_TIME = 3000L;
+        
+        int    observingPlayer = 0;
+        int    observedPlayer  = 0;
+        String messageText     = null;
+        long   currentCollisionTimestamp = 0L;
+        long   timespanWithoutCollision  = 0L;
+        
+        currentCollisionTimestamp = System.currentTimeMillis ();
+        timespanWithoutCollision  = (currentCollisionTimestamp - lastCollisionTimestamp);
+        
+//        System.out.format ("TC: %s / %s\n",
+//            timespanWithoutCollision,
+//            MINIMUM_COLLISION_IGNORE_TIME);
+        
+        if (timespanWithoutCollision < MINIMUM_COLLISION_IGNORE_TIME)
+        {
+          System.out.format ("Too little time from last collision: %s < %s\n",
+                             timespanWithoutCollision,
+                             MINIMUM_COLLISION_IGNORE_TIME);
+          return;
+        }
+        
+        lastCollisionTimestamp = currentCollisionTimestamp;
+        
+        observingPlayer = observingModel.getPlayerNumber ();
+        observedPlayer  = observedModel.getPlayerNumber  ();
+        
+        // Enemy unit hit? => Perform action for active player.
+        if (observingPlayer != observedPlayer)
+        {
+          message3D.hide ();
+          
+          messageText = String.format
+          (
+            "{%s} \u2194 {%s}",
+            observingModel.getPlayerNumber (),
+            observedModel.getPlayerNumber  ()
+          );
+          message3D.setText (messageText);
+          message3D.showFor (1000);
+          changePlayer    ();
+//          activePlayer = -1;
+        }
+      }
+      // Enemy unit is null?
+      else
+      {
+        System.out.println ("[?] Collision with NULL detected.");
+      }
+    }
+  }
+  
+  private void changePlayer ()
+  {
+    int previousActivePlayer = activePlayer;
+    
+    if (previousActivePlayer == 1)
+    {
+      activePlayer = 2;
+    }
+    else
+    {
+      activePlayer = 1;
+    }
+    
+    // Unmark the previous active player's characters.
+    for (MarkerModel model : detectMarkers.getMarkerModelsForPlayer (previousActivePlayer))
+    {
+      model.setMarked (false);
+    }
+    
+    // Mark the current active player's characters.
+    for (MarkerModel model : detectMarkers.getMarkerModelsForPlayer (activePlayer))
+    {
+      model.setMarked (true);
+    }
+  }
+  
+  
+  
   private J3dNyARParam readCameraParams(String fnm)
   {
     // TODO: ADDED BY MYSELF.
@@ -104,7 +226,7 @@ public class MultiNyAR extends JFrame
         ioe.printStackTrace ();
       }
       
-      cameraParams.changeScreenSize(PWIDTH, PHEIGHT);
+      cameraParams.changeScreenSize (PWIDTH, PHEIGHT);
     }
     catch(NyARException e)
     {
@@ -147,50 +269,86 @@ public class MultiNyAR extends JFrame
          sceneBG 
                ---> lights
                |
-               ---> bg
+               ---> background
                |
                -----> tg1 ---> model1  
                -----> tg2 ---> model2 
                |
                ---> behavior  (controls the bg and the tg's of the models)
   */
-  { 
-    BranchGroup sceneBG = new BranchGroup ();
-    lightScene(sceneBG);              // add lights
+  {
+    BranchGroup   sceneBG              = null;
+    Background    background           = null;
+    MarkerModel   robotMarkerModel     = null;
+    MarkerModel   cowMarkerModel       = null;
+    MarkerModel   sphereBoyMarkerModel = null;
+//    DetectMarkers detectMarkers        = null;
     
-    Background bg = makeBackground();
-    sceneBG.addChild(bg);             // add background
+    sceneBG    = new BranchGroup ();
+    background = makeBackground  ();
     
+    lightScene       (sceneBG);        // add lights
+    sceneBG.addChild (background);     // add background
     
-    DetectMarkers detectMarkers = new DetectMarkers(this);
+//    detectMarkers = new DetectMarkers  (this);
+    detectMarkers.addCollisionListener (this);
     
     // the "hiro" marker uses a robot model, scaled by 0.15 units, with no coords file
-    MarkerModel mm1 = new MarkerModel("patt.hiro", "robot.3ds", 0.15, false);
-    if (mm1.getMarkerInfo() != null) {    // creation was successful
-      sceneBG.addChild( mm1.getMoveTg() );
-      detectMarkers.addMarker(mm1);
-    }
+//    MarkerModel mm1 = new MarkerModel("patt.hiro", "robot.3ds", 0.15, false);
+    robotMarkerModel = new MarkerModel ("marker_circleSegment.pat", "robot.3ds", 0.15, false);
+    robotMarkerModel.setPlayerNumber (1);
+    robotMarkerModel.getActiveMark ().setAppearance (DefaultMaterials.getAppearance (DefaultMaterials.MaterialName.KILGARD_YELLOW_RUBBER));
+//    robotMarkerModel.setMarked       (true);
+    // creation was successful
+    addAndRegisterMarker (robotMarkerModel, sceneBG, detectMarkers);
+//    if (mm1.getMarkerInfo() != null)
+//    {
+//      sceneBG.addChild (mm1.getMoveTg ());
+//      detectMarkers.addMarker (mm1);
+//    }
     
     // the "kanji" marker uses a cow model, scaled by 0.12 units, with coords file
-    MarkerModel mm2 = new MarkerModel("patt.kanji", "cow.obj", 0.12, true);
-    if (mm2.getMarkerInfo() != null) {
-      sceneBG.addChild( mm2.getMoveTg() );
-      detectMarkers.addMarker(mm2);
-    }
+    cowMarkerModel = new MarkerModel("patt.kanji", "cow.obj", 0.12, true);
+    cowMarkerModel.setPlayerNumber (9);
+    addAndRegisterMarker (cowMarkerModel, sceneBG, detectMarkers);
     
-    // TODO: ADDED A MODEL MYSELF.
+    
     // the "black-white-shield_001" marker uses a robot model, scaled by 0.15 units, with no coords file
 //    MarkerModel mmShield = new MarkerModel("black-white-shield_001.pat", "bunny.obj", 0.15, false);
-    MarkerModel mmShield = new MarkerModel ("black-white-shield_001.pat", "Figur_001.wrl", 0.15, false);
-    if (mmShield.getMarkerInfo() != null) {    // creation was successful
-      sceneBG.addChild        (mmShield.getMoveTg ());
-      detectMarkers.addMarker (mmShield);
-    }
+    sphereBoyMarkerModel = new MarkerModel ("marker_BlackWhiteShield_001.pat", "Figur_002.wrl", 0.15, false);
+//    sphereBoyMarkerModel.setCanAct (true);
+    sphereBoyMarkerModel.setPlayerNumber (2);
+//    sphereBoyMarkerModel.setMarked       (true);
+    addAndRegisterMarker (sphereBoyMarkerModel, sceneBG, detectMarkers);
+    sphereBoyMarkerModel.getActiveMark ().setAppearance (DefaultMaterials.getAppearance (DefaultMaterials.MaterialName.COLE_RED_ALLOY));
+//    ModelAppearanceAssigner appearanceAssigner = new ModelAppearanceAssigner
+//    (
+//      sphereBoyMarkerModel.getMoveTg ()
+//    );
+//    QuickShaderAppearance   shaderAppearance   = new QuickShaderAppearance
+//    (
+//      "myresources/misc-test_024.vert",
+//      "myresources/misc-test_024.frag"
+//    );
+//    shaderAppearance.setMaterial (new Material
+//    (
+//      ColorConstants.RED_3F,
+//      ColorConstants.BLACK_3F,
+//      ColorConstants.RED_3F,
+//      ColorConstants.WHITE_3F,
+//      100.0f
+//    ));
+//    shaderAppearance.setMaterial (OpenGLMaterials.getMaterial (OpenGLMaterials.MaterialName.GOLD_2));
+//    appearanceAssigner.assignAppearance (shaderAppearance);
+    
     
     // create a NyAR multiple marker behaviour
-    sceneBG.addChild( new NyARMarkersBehavior(cameraParams, bg, detectMarkers) );
-
-    sceneBG.compile();       // optimize the sceneBG graph
+    sceneBG.addChild (new NyARMarkersBehavior (cameraParams, background, detectMarkers));
+    
+    // Append the message object to the scene graph.
+    sceneBG.addChild (message3D.getNode3D ());
+    
+    sceneBG.compile ();       // optimize the sceneBG graph
     return sceneBG;
   }  // end of createSceneGraph()
 
@@ -206,7 +364,14 @@ public class MultiNyAR extends JFrame
     AmbientLight ambientLightNode = new AmbientLight(white);
     ambientLightNode.setInfluencingBounds(bounds);
     sceneBG.addChild(ambientLightNode);
-
+    
+    /*
+    // TODO: OWN TEST
+    // Set up the directional lights
+    Vector3f light1Direction  = new Vector3f(0.0f, 3.0f, -1.0f);
+    Vector3f light2Direction  = new Vector3f(0.0f, -1.0f, 1.0f);
+    */
+    
     // Set up the directional lights
     Vector3f light1Direction  = new Vector3f(-1.0f, -1.0f, -1.0f);
        // left, down, backwards 
@@ -275,7 +440,21 @@ public class MultiNyAR extends JFrame
   {
     statusTA.setText(msg);
   }  // end of setStatus()
-
+  
+  
+  private void addAndRegisterMarker
+  (
+    MarkerModel   markerModel,
+    BranchGroup   sceneBG,
+    DetectMarkers detectMarkers
+  )
+  {
+    if (markerModel.getMarkerInfo() != null)
+    {
+      sceneBG.addChild        (markerModel.getMoveTg ());
+      detectMarkers.addMarker (markerModel);
+    }
+  }
 
 
   // ------------------------------------------------------------
