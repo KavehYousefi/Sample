@@ -20,6 +20,7 @@ import javax.vecmath.*;
 import commies.ActiveMark;
 import commies.BoundsRenderer;
 import commies.CharacterUserData;
+import commies.DiskBoundsRenderer;
 import jp.nyatla.nyartoolkit.core.*;
 import jp.nyatla.nyartoolkit.core.transmat.NyARTransMatResult;
 
@@ -50,10 +51,11 @@ public class MarkerModel
   // @TODO Added by me.
   private BoundsRenderer interactionBounds;
   
-  private boolean    canAct;
-  private int        playerNumber;
-  private boolean    isMarked;
-  private ActiveMark activeMark;
+  private boolean            canAct;
+  private int                playerNumber;
+  private boolean            isMarked;
+  private ActiveMark         activeMark;
+  private DiskBoundsRenderer diskBoundsRenderer;
   
   
   public MarkerModel
@@ -88,9 +90,10 @@ public class MarkerModel
     );
 //    modelTG.addChild (interactionBounds.getRootNode ());
     interactionBounds.setColor (new Color3f (1.0f, 1.0f, 0.0f));
-    this.canAct = false;
-    this.isMarked = false;
-    this.activeMark = new ActiveMark ();
+    this.canAct             = false;
+    this.isMarked           = false;
+    this.activeMark         = new ActiveMark ();
+    this.diskBoundsRenderer = new DiskBoundsRenderer (0.10, 20);
     this.activeMark.setPosition (new Point3d  (0.000, 0.000, 0.100));
     this.activeMark.setScaling  (new Vector3d (0.015, 0.030, 0.015));
     
@@ -100,7 +103,8 @@ public class MarkerModel
     moveTg.setCapability        (TransformGroup.ALLOW_TRANSFORM_WRITE);  // so this tg can change
     moveTg.addChild             (visSwitch);
     
-    moveTg.addChild (activeMark.getRootNode ());
+    moveTg.addChild (activeMark.getRootNode         ());
+    moveTg.addChild (diskBoundsRenderer.getRootNode ());
     
 //    BoundingBox modelBounds = new BoundingBox (moveTg.getBounds ());
 //    Point3d     modelUpperCorner = new Point3d ();

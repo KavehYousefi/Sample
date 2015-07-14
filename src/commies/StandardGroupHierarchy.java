@@ -27,12 +27,11 @@ public class StandardGroupHierarchy
     visibilityGroup.setCapability (Switch.ALLOW_SWITCH_READ);
     visibilityGroup.setCapability (Switch.ALLOW_SWITCH_WRITE);
     
-//    rotationGroup.setTransform (createUpsideDownRotation ());
-    
-    root.addChild             (translationGroup);
-    translationGroup.addChild (rotationGroup);
-    rotationGroup.addChild    (scaleGroup);
-    scaleGroup.addChild       (visibilityGroup);
+    root.addChild                 (translationGroup);
+    translationGroup.addChild     (rotationGroup);
+    rotationGroup.addChild        (scaleGroup);
+    scaleGroup.addChild           (visibilityGroup);
+    visibilityGroup.setWhichChild (Switch.CHILD_ALL);
   }
   
   
