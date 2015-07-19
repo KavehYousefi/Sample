@@ -25,12 +25,16 @@ public class DiskBoundsRenderer
   
   private StandardGroupHierarchy groupHierarchy;
   private Shape3D                diskShape3D;
+  private double                 diskRadius;
+  private int                    cornerPointCount;
   
   
   public DiskBoundsRenderer (double radius, int cornerPointCount)
   {
-    this.groupHierarchy = new StandardGroupHierarchy ();
-    this.diskShape3D    = createDiskShape3D          (radius, cornerPointCount);
+    this.groupHierarchy   = new StandardGroupHierarchy ();
+    this.diskRadius       = radius;
+    this.cornerPointCount = cornerPointCount;
+    this.diskShape3D      = createDiskShape3D (radius, cornerPointCount);
     
     groupHierarchy.getVisibilitySwitchGroup ().addChild (diskShape3D);
     groupHierarchy.getVisibilitySwitchGroup ().addChild (createTransparencyInterpolator ());
@@ -45,6 +49,32 @@ public class DiskBoundsRenderer
   public void setAppearance (Appearance appearance)
   {
     this.diskShape3D.setAppearance (appearance);
+  }
+  
+//  public void setDiskRadius (double diskRadius)
+//  {
+//    Transform3D scaleTransform3D = null;
+//    
+//    this.diskRadius  = diskRadius;
+//    scaleTransform3D = createScaleTransform3DFromRadius (diskRadius);
+//    groupHierarchy.getScaleTransformGroup ().setTransform (scaleTransform3D);
+//  }
+  
+  public double getDiskRadius ()
+  {
+    return diskRadius;
+  }
+  
+  public void setDiskRadius (double diskRadius)
+  {
+    this.diskRadius = diskRadius;
+    
+    diskShape3D.setGeometry (createDiskGeometry (diskRadius, cornerPointCount));
+  }
+  
+  public int getCornerPointCount ()
+  {
+    return cornerPointCount;
   }
   
   
@@ -89,6 +119,12 @@ public class DiskBoundsRenderer
     
     diskShape3D.setGeometry   (diskGeometry);
     diskShape3D.setAppearance (appearance);
+    diskShape3D.setCapability (Shape3D.ALLOW_APPEARANCE_OVERRIDE_READ);
+    diskShape3D.setCapability (Shape3D.ALLOW_APPEARANCE_OVERRIDE_WRITE);
+    diskShape3D.setCapability (Shape3D.ALLOW_APPEARANCE_READ);
+    diskShape3D.setCapability (Shape3D.ALLOW_APPEARANCE_WRITE);
+    diskShape3D.setCapability (Shape3D.ALLOW_GEOMETRY_READ);
+    diskShape3D.setCapability (Shape3D.ALLOW_GEOMETRY_WRITE);
     
     return diskShape3D;
   }
@@ -170,4 +206,14 @@ public class DiskBoundsRenderer
     
     return transparencyInterpolator;
   }
+  
+//  private Transform3D createScaleTransform3DFromRadius (double radius)
+//  {
+//    Transform3D scaleTransform = null;
+//    
+//    scaleTransform = new Transform3D ();
+//    scaleTransform.setScale (radius);
+//    
+//    return scaleTransform;
+//  }
 }

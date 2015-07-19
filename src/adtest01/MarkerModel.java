@@ -56,6 +56,7 @@ public class MarkerModel
   private boolean            isMarked;
   private ActiveMark         activeMark;
   private DiskBoundsRenderer diskBoundsRenderer;
+  private double             interactionRadius;
   
   
   public MarkerModel
@@ -96,6 +97,7 @@ public class MarkerModel
     this.diskBoundsRenderer = new DiskBoundsRenderer (0.10, 20);
     this.activeMark.setPosition (new Point3d  (0.000, 0.000, 0.100));
     this.activeMark.setScaling  (new Vector3d (0.015, 0.030, 0.015));
+    this.interactionRadius  = 1.0;
     
     
     // create transform group for positioning the model
@@ -190,6 +192,12 @@ public class MarkerModel
   public ActiveMark getActiveMark ()
   {
     return activeMark;
+  }
+  
+  public void setInteractionRadius (double interactionRadius)
+  {
+    this.interactionRadius = interactionRadius;
+    this.diskBoundsRenderer.setDiskRadius (interactionRadius);
   }
   
   
