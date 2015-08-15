@@ -30,10 +30,9 @@ import collision.CollisionListener;
 
 import com.sun.j3d.utils.universe.*;
 
-import commies.ColorConstants;
 import commies.Message3D;
-import commies.ModelAppearanceAssigner;
-import commies.QuickShaderAppearance;
+
+import ky.appearance.DefaultMaterials;
 
 import javax.media.j3d.*;
 import javax.vecmath.*;

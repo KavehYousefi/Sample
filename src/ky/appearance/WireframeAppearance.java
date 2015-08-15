@@ -1,6 +1,6 @@
 // 24.12.2012
 
-package commies;
+package ky.appearance;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.ColoringAttributes;

@@ -2,6 +2,8 @@
 
 package commies;
 
+import j3dextraction.SceneGraphDataExtractor;
+
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Group;
 import javax.media.j3d.Shape3D;
@@ -20,7 +22,12 @@ public class ModelAppearanceAssigner
   
   public void assignAppearance (Appearance appearance)
   {
-    for (Shape3D shape3D : new ModelInspection ().getShape3Ds (modelGroup))
+    SceneGraphDataExtractor sceneGraphDataExtractor = null;
+    
+    sceneGraphDataExtractor = new SceneGraphDataExtractor ();
+    sceneGraphDataExtractor.examine (modelGroup);
+    
+    for (Shape3D shape3D : sceneGraphDataExtractor.getShape3Ds ())
     {
       shape3D.setAppearance (appearance);
     }

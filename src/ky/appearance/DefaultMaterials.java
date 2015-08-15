@@ -2,7 +2,7 @@
 // -> "http://devernay.free.fr/cours/opengl/materials.html"
 // -> "http://cs.boisestate.edu/~tcole/cs221/fall08/vg/cgslides09.ppt"
 
-package adtest01;
+package ky.appearance;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -91,6 +91,11 @@ public class DefaultMaterials
   private static Map<MaterialName, Material> materialMap = createMaterialMap ();
   
   
+  /**
+   * <div class="introConstructor">
+   *   A non-functional constructor.
+   * </div>
+   */
   private DefaultMaterials ()
   {
   }
@@ -120,12 +125,25 @@ public class DefaultMaterials
     return appearance;
   }
   
+  public static Map<MaterialName, Material> getMaterialMap ()
+  {
+    return new EnumMap<MaterialName, Material> (materialMap);
+  }
+  
   
   
   //////////////////////////////////////////////////////////////////////
   // -- Implementation of auxiliary methods.                       -- //
   //////////////////////////////////////////////////////////////////////
   
+  /**
+   * <div class="introMethod">
+   *   Creates a map containing the material names as keys and materials
+   *   as associated values.
+   * </div>
+   * 
+   * @return  A mapping of material names to materials.
+   */
   private static Map<MaterialName, Material> createMaterialMap ()
   {
     Map<MaterialName, Material> materialMap = null;
@@ -824,8 +842,6 @@ public class DefaultMaterials
         76.8f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -839,8 +855,6 @@ public class DefaultMaterials
         76.8f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -854,8 +868,6 @@ public class DefaultMaterials
         12.8f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -869,8 +881,6 @@ public class DefaultMaterials
         51.2f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -885,8 +895,6 @@ public class DefaultMaterials
       )
     );
   
-   
-    
     materialMap.put
     (
       MaterialName.HANSEN_POLISHED_GOLD,
@@ -899,8 +907,6 @@ public class DefaultMaterials
         83.2f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -914,8 +920,6 @@ public class DefaultMaterials
         9.84615f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -929,8 +933,6 @@ public class DefaultMaterials
         51.2f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -944,8 +946,6 @@ public class DefaultMaterials
         89.6f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -959,8 +959,6 @@ public class DefaultMaterials
         76.8f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -974,8 +972,6 @@ public class DefaultMaterials
         12.8f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -989,8 +985,6 @@ public class DefaultMaterials
         38.4f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -1004,8 +998,6 @@ public class DefaultMaterials
         11.264f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -1019,8 +1011,6 @@ public class DefaultMaterials
         76.8f
       )
     );
-  
-   
     
     materialMap.put
     (
@@ -1034,8 +1024,6 @@ public class DefaultMaterials
         12.8f
       )
     );
-  
-   
     
     materialMap.put
     (

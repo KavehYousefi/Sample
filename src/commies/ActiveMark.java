@@ -2,7 +2,6 @@
 
 package commies;
 
-import commies.OpenGLMaterials.MaterialName;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
@@ -12,6 +11,9 @@ import javax.media.j3d.TransformGroup;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+
+import ky.appearance.DefaultMaterials;
+import ky.appearance.DefaultMaterials.MaterialName;
 
 import com.sun.j3d.utils.geometry.Cone;
 
@@ -124,7 +126,7 @@ public class ActiveMark
     (
       1.0f,
       1.0f,
-      OpenGLMaterials.getAppearance (MaterialName.PEARL)
+      DefaultMaterials.getAppearance (MaterialName.HANSEN_BRASS)
 //      new WireframeAppearance ()
     );
     

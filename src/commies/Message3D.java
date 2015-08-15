@@ -24,7 +24,7 @@ import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
-import commies.OpenGLMaterials.MaterialName;
+import ky.appearance.DefaultMaterials;
 
 
 public class Message3D
@@ -114,7 +114,7 @@ public class Message3D
 //      ColorConstants.WHITE_3F,
 //      100.0f
 //    ));
-    textShape3D.setAppearance (OpenGLMaterials.getAppearance (MaterialName.GOLD_2));
+    textShape3D.setAppearance (DefaultMaterials.getAppearance (ky.appearance.DefaultMaterials.MaterialName.COLE_GOLD));
     
     text3D.setCapability          (Text3D.ALLOW_POSITION_READ);
     text3D.setCapability          (Text3D.ALLOW_POSITION_WRITE);
