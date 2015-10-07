@@ -24,6 +24,12 @@ public class MarkerDetector
   }
   
   
+  public NyARDetectMarker getNyARDetectMarker ()
+  {
+    return nyARDetectMarker;
+  }
+  
+  
   public void addMarkerModel (MarkerModel markerModel)
   {
     if (markerModel != null)
@@ -69,7 +75,7 @@ public class MarkerDetector
     catch (NyARException e)
     {
       // TODO Auto-generated catch block
-      e.printStackTrace();
+      e.printStackTrace ();
     }
   }
 }

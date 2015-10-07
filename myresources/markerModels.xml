@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<marker-models>
+  
+  <model key="bunny"
+         name="Bunny">
+    <marker-file path="Data/marker_circleSegment.pat"                 />
+    <graphics type="external-model">
+      <external-model-file path="models/m111.off"
+                           scaling="0.15"                             />
+      <appearance          type="color"
+                           color="1.0  0.78431374  0.0"               />
+    </graphics>
+    <marker-type type="character"                                     />
+    <statistics  power="10"
+                 attack="2"
+                 defense="10"                                         />
+    <effect      name=""                                              />
+    <icon        path="myresources/icon_snake_001.png"                />
+  </model>
+  
+  <model key="snake"
+         name="Snake">
+    <marker-file path="Data/marker_BlackWhiteShield_001.pat"          />
+    <graphics type="external-model">
+      <external-model-file path="models/m85.off"
+                           scaling="0.15"                             />
+      <appearance          type="color"
+                           color="0.0 1.0 0.0"                        />
+    </graphics>
+    <marker-type type="character"                                     />
+    <statistics  power="9"
+                 attack="7"
+                 defense="4"                                          />
+    <element     type="water"                                         />
+    <effect      name=""                                              />
+    <icon        path="myresources/icon_snake_001.png"                />
+  </model>
+  
+  <model key="bird"
+         name="Birdy">
+    <marker-file path="Data/patt.hiro"                        />
+    <graphics type="external-model">
+      <external-model-file path="models/m34.off"
+                           scaling="0.15"                             />
+      <appearance          type="color"
+                           color="0.0 0.0 1.0"                        />
+    </graphics>
+    <marker-type type="character"                                     />
+    <statistics  power="8"
+                 attack="4"
+                 defense="10"                                         />
+    <element     type="ice"                                           />
+    <effect      name=""                                              />
+    <icon        path="myresources/icon_bird_001.png"                 />
+  </model>
+  
+  <model key="boy"
+         name="Boy">
+    <marker-file path="Data/marker_T.pat"                             />
+    <graphics type="external-model">
+      <external-model-file path="models/Figur_002.wrl"
+                           scaling="0.15"                             />
+    </graphics>
+    <marker-type type="character"                                     />
+    <statistics  power="10"
+                 attack="7"
+                 defense="2"                                          />
+    <element     type="fire"                                          />
+    <effect      name=""                                              />
+    <icon        path="myresources/icon_boy_001.png"                  />
+  </model>
+  
+  
+  <model key="defenseMarker1"
+         name="Defense Marker 1">
+    <marker-file path="Data/marker_spikes.pat"                        />
+    <graphics type="custom-3d-model">
+      <custom-model name=""                                           />
+    </graphics>
+    <marker-type type="defense"                                       />
+    <element     type="none"                                          />
+    <effect      name=""                                              />
+    <collision   allowed="true"                                       />
+    <player      number="1"                                           />
+  </model>
+  
+  <model key="defenseMarker2"
+         name="Defense Marker 2">
+    <marker-file path="Data/marker_spikes.pat"                        />
+    <graphics type="custom-3d-model">
+      <custom-model name=""                                           />
+    </graphics>
+    <marker-type type="defense"                                       />
+    <element     type="none"                                          />
+    <effect      name=""                                              />
+    <collision   allowed="true"                                       />
+    <player      number="2"                                           />
+  </model>
+  
+  
+  <model key="characterSwapper"
+         name="Character Swapper">
+    <marker-file path="Data/patt.hiro"                                />
+    <graphics type="custom-3d-model">
+      <custom-model name=""                                           />
+    </graphics>
+    <marker-type type="effect"                                        />
+    <element     type="none"                                          />
+    <effect      name="characterSwapper"                              />
+    <collision   allowed="false"                                      />
+  </model>
+  
+  <model key="statisticsMixer"
+         name="Statistics Mixer">
+    <marker-file path="Data/circle_and_ellipse.pat"                   />
+    <graphics type="custom-3d-model">
+      <custom-model name=""                                           />
+    </graphics>
+    <marker-type type="effect"                                        />
+    <element     type="none"                                          />
+    <effect      name="statisticsMixer"                               />
+    <collision   allowed="false"                                      />
+  </model>
+  
+</marker-models>

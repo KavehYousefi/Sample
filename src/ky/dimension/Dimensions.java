@@ -2,14 +2,12 @@
 
 package ky.dimension;
 
-import commies.angle.Angle;
 import ky.transform.Scaling;
 import safercode.CheckingUtils;
 
 import java.awt.Dimension;
 import java.awt.Shape;
 import java.awt.geom.Dimension2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 

@@ -1,8 +1,5 @@
 package ky.transform;
 
-import commies.angle.Angle;
-import commies.angle.AngleMath;
-import commies.angle.AngleUnit;
 import safercode.CheckingUtils;
 
 import java.awt.geom.AffineTransform;
@@ -14,6 +11,10 @@ import java.util.Map.Entry;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Matrix3d;
+
+import ky.angle.Angle;
+import ky.angle.AngleMath;
+import ky.angle.AngleUnit;
 
 
 /**

@@ -2,13 +2,13 @@
 
 package ky.transform;
 
-import commies.angle.Angle;
-import commies.angle.AngleMath;
-
 import java.awt.geom.AffineTransform;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Matrix4d;
+
+import ky.angle.Angle;
+import ky.angle.AngleMath;
 
 
 // -> "http://www.codeproject.com/Articles/42086/Space-and-Matrix-Transformations-Building-a-D-Eng"

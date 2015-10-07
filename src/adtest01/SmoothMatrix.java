@@ -21,56 +21,96 @@ public class SmoothMatrix
   private final static int MAX_SIZE = 10;
 
   private ArrayList<Matrix4d> matsStore;
-  private int numMats = 0;
+  private int                 numberOfMatrices;
 
 
   public SmoothMatrix() 
   {
-    matsStore = new ArrayList<Matrix4d>();
-
+    this.matsStore        = new ArrayList<Matrix4d>();
+    this.numberOfMatrices = 0;
   } // end of SmoothMatrix()
-
-
-
-  public boolean add(NyARTransMatResult transMat)
+  
+  
+  public boolean add (NyARTransMatResult transMat)
   {
-
-    Matrix4d mat = new Matrix4d(-transMat.m00, -transMat.m01, -transMat.m02, -transMat.m03,
-                                -transMat.m10, -transMat.m11, -transMat.m12, -transMat.m13, 
-                                 transMat.m20,  transMat.m21,  transMat.m22,  transMat.m23,
-                                 0,             0,             0,             1             );
-    Transform3D t3d = new Transform3D(mat);
-
-    int flags = t3d.getType();
-    if ((flags & Transform3D.AFFINE) == 0) {
+    Matrix4d matrix4d = null;
+    
+    matrix4d = getMatrix4dFromNyARTransMatResult (transMat);
+    
+    if (isAffineMatrix (matrix4d))
+    {
+      if (numberOfMatrices == MAX_SIZE)
+      {
+        matsStore.remove (0);   // remove oldest
+        numberOfMatrices--;
+      }
+      
+      matsStore.add(matrix4d);  // add at end of list
+      numberOfMatrices++;
+      return true;
+    }
+    else
+    {
       System.out.println("Not adding a non-affine matrix");
       return false;
-    }
-    else {
-      if (numMats == MAX_SIZE) {
-        matsStore.remove(0);   // remove oldest
-        numMats--;
-      }
-      matsStore.add(mat);  // add at end of list
-      numMats++;
-      return true;
     }
   }  // end of add()
 
 
-  public Matrix4d get()
-  // average matricies in store
+  public Matrix4d get ()
+  // average matrices in store
   {
-    if (numMats == 0)
+    if (numberOfMatrices == 0)
+    {
       return null;
+    }
+    
+    Matrix4d averageMatrix = new Matrix4d ();
+    
+    for (Matrix4d mat : matsStore)
+    {
+      averageMatrix.add (mat);
+    }
+    
+    averageMatrix.mul (1.0 / numberOfMatrices);
 
-    Matrix4d avMat = new Matrix4d();
-    for(Matrix4d mat : matsStore)
-      avMat.add(mat);
-    avMat.mul( 1.0/numMats );
-
-    return avMat;
+    return averageMatrix;
   }  // end of get()
-
+  
+  
+  private Matrix4d getMatrix4dFromNyARTransMatResult (NyARTransMatResult transMat)
+  {
+    Matrix4d matrix4d = null;
+    
+    matrix4d = new Matrix4d
+    (
+      -transMat.m00, -transMat.m01, -transMat.m02, -transMat.m03,
+      -transMat.m10, -transMat.m11, -transMat.m12, -transMat.m13, 
+       transMat.m20,  transMat.m21,  transMat.m22,  transMat.m23,
+       0.0,           0.0,           0.0,           1.0
+    );
+    
+    return matrix4d;
+  }
+  
+  private boolean isAffineMatrix (Matrix4d matrix4d)
+  {
+    Transform3D transform3D = null;
+    int         flags       = 0;
+    
+    transform3D = new Transform3D     (matrix4d);
+    flags       = transform3D.getType ();
+    
+    if ((flags & Transform3D.AFFINE) == 0)
+    {
+      System.out.println ("Not adding a non-affine matrix");
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  }
+  
 }  // end of SmoothMatrix class
 

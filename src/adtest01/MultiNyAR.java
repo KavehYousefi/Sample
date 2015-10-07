@@ -22,18 +22,13 @@ package adtest01;
 
 import java.awt.*;
 import java.io.*;
-
 import javax.swing.*;
 
 import collision.CollisionEvent;
 import collision.CollisionListener;
+import ky.Message3D;
 
 import com.sun.j3d.utils.universe.*;
-
-import commies.Message3D;
-
-import ky.appearance.DefaultMaterials;
-
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
@@ -41,175 +36,369 @@ import jp.nyatla.nyartoolkit.core.*;
 import jp.nyatla.nyartoolkit.java3d.utils.*;
 
 
-
 @SuppressWarnings ({"serial"})
 public class MultiNyAR
 extends      JFrame
-implements   CollisionListener
+implements   CollisionListener, MarkerModelListener
 {
-  private final String PARAMS_FNM = "Data/camera_para.dat";
-
-  private static final int PWIDTH  = 320;   // size of panel
-  private static final int PHEIGHT = 240; 
-
-//  private static final double SHAPE_SIZE = 0.02; 
-
-  private static final int BOUNDSIZE = 100;  // larger than world
-
-  private J3dNyARParam cameraParams;
-  private JTextArea    statusTA;
+  private static final String CAMERA_PARAMETERS_FILE = "Data/camera_para.dat";
+  private static final int    PANEL_WIDTH            = 320;   // size of panel
+  private static final int    PANEL_HEIGHT           = 240; 
+  private static final double BOUNDS_SIZE            = 100.0; // larger than world
   
-  private Message3D    message3D;
+  private J3dNyARParam     cameraParams;
+  private JTextArea        statusTextArea;
+  private JTextArea        testingTextArea;
+  
+  private Message3D        message3D;
+  private CharacterStatusPanel characterStatusPanel;
+  
+  private PlayerManager    playerManager;
+  private DetectMarkers    detectMarkers;
+  private GameState        gameState;
   
   
-  private int          activePlayer;
-  private long         lastCollisionTimestamp;
-  private DetectMarkers detectMarkers;
-
-
   public MultiNyAR()
   {
     super ("Multiple markers NyARToolkit Example");
     
+    this.playerManager    = new PlayerManager ();
+    this.detectMarkers    = new DetectMarkers (this);
+    this.cameraParams     = readCameraParams (CAMERA_PARAMETERS_FILE);
+    this.gameState        = GameState.RUNNING;
     
-    activePlayer           = 1;
-    lastCollisionTimestamp = 0;
+    this.characterStatusPanel = new CharacterStatusPanel (detectMarkers, PANEL_WIDTH, 80);
     
     message3D = new Message3D ();
     message3D.setPosition     (new Point3d (0.0, 0.0, 0.0));
-    this.detectMarkers = new DetectMarkers (this);
     
-    
-    cameraParams = readCameraParams (PARAMS_FNM);
-    
-    Container cp = getContentPane ();
+    Container contentPane = getContentPane ();
     // Create a JPanel in the center of JFrame.
-    JPanel    p  = new JPanel     ();
+    JPanel    canvasPanel = new JPanel     ();
     
-    p.setLayout        (new BorderLayout ());
-    p.setPreferredSize (new Dimension (PWIDTH, PHEIGHT));
-    cp.add             (p, BorderLayout.CENTER);
+    canvasPanel.setLayout        (new BorderLayout ());
+    canvasPanel.setPreferredSize (new Dimension (PANEL_WIDTH, PANEL_HEIGHT));
+    contentPane.add              (canvasPanel, BorderLayout.CENTER);
     
     // put the 3D canvas inside the JPanel
-    p.add(createCanvas3D(), BorderLayout.CENTER);
+    canvasPanel.add (createCanvas3D (), BorderLayout.CENTER);
     
     // add status field to bottom of JFrame
-    statusTA = new JTextArea(7, 10);   // updated by DetectMarkers object (see createSceneGraph())
-    statusTA.setEditable(false);
-    cp.add(statusTA, BorderLayout.SOUTH);
+    statusTextArea = new JTextArea (7, 10);   // updated by DetectMarkers object (see createSceneGraph())
+    statusTextArea.setEditable(false);
+//    contentPane.add (statusTextArea, BorderLayout.SOUTH);
+    contentPane.add (characterStatusPanel.getPanel (), BorderLayout.NORTH);
+    
+    testingTextArea = new JTextArea (7, 10);
+    testingTextArea.setEditable     (false);
+//    contentPane.add (testingTextArea, BorderLayout.SOUTH);
     
     // configure the JFrame
     setDefaultCloseOperation (WindowConstants.EXIT_ON_CLOSE );
     pack                     ();
     setVisible               (true);
+    
+    this.playerManager.setActivePlayer (1);
+    updateMarkerModelStates            ();
   }  // end of MultiNyAR()
   
   
   
+  public void showMessage3D (String messageText, int durationInMilliseconds)
+  {
+    message3D.hide    ();
+    message3D.setText (messageText);
+    message3D.showFor (durationInMilliseconds);
+  }
+  
+  
+  
+  //////////////////////////////////////////////////////////////////////
+  // -- Implementation of methods from "CollisionListener".        -- //
+  //////////////////////////////////////////////////////////////////////
   
   @Override
   public void collisionStarted (CollisionEvent event)
   {
-//    message3D.setText ("Collision detected.");
-//    message3D.showFor (1000);
-    
-    MarkerModel observingModel = event.getObservingModel ();
-    MarkerModel observedModel  = event.getObservedModel  ();
-    
-//    System.out.println (observingModel.getPlayerNumber () + " -- " + observedModel.getPlayerNumber ());
-    
-    if (observingModel != null)
+    if (gameState.equals (GameState.OVER))
     {
-      // Enemy unit is not null?
-      if (observedModel != null)
+      return;
+    }
+    
+    if (gameState.equals (GameState.PREPARING))
+    {
+      return;
+    }
+    
+    MarkerModel   observingModel = null;
+    MarkerModel   observedModel  = null;
+    MarkerModel   attackingModel = null;
+    MarkerModel   targetModel    = null;
+    AttackHandler attackHandler  = null;
+    int           activePlayer   = 0;
+    int           inactivePlayer = 0;
+    
+    observingModel = event.getObservingModel ();
+    observedModel  = event.getObservedModel  ();
+    activePlayer   = getActivePlayer         ();
+    inactivePlayer = getInactivePlayer       ();
+    
+    if (isNullCollision (observingModel, observedModel))
+    {
+      return;
+    }
+    else if (isDefenseGesture (observingModel, observedModel))
+    {
+      showMessage3D ("DEFENDING", 1000);
+      if (observingModel.isCharacter ())
       {
-        final long MINIMUM_COLLISION_IGNORE_TIME = 3000L;
-        
-        int    observingPlayer = 0;
-        int    observedPlayer  = 0;
-        String messageText     = null;
-        long   currentCollisionTimestamp = 0L;
-        long   timespanWithoutCollision  = 0L;
-        
-        currentCollisionTimestamp = System.currentTimeMillis ();
-        timespanWithoutCollision  = (currentCollisionTimestamp - lastCollisionTimestamp);
-        
-//        System.out.format ("TC: %s / %s\n",
-//            timespanWithoutCollision,
-//            MINIMUM_COLLISION_IGNORE_TIME);
-        
-        if (timespanWithoutCollision < MINIMUM_COLLISION_IGNORE_TIME)
-        {
-          System.out.format ("Too little time from last collision: %s < %s\n",
-                             timespanWithoutCollision,
-                             MINIMUM_COLLISION_IGNORE_TIME);
-          return;
-        }
-        
-        lastCollisionTimestamp = currentCollisionTimestamp;
-        
-        observingPlayer = observingModel.getPlayerNumber ();
-        observedPlayer  = observedModel.getPlayerNumber  ();
-        
-        // Enemy unit hit? => Perform action for active player.
-        if (observingPlayer != observedPlayer)
-        {
-          message3D.hide ();
-          
-          messageText = String.format
-          (
-            "{%s} \u2194 {%s}",
-            observingModel.getPlayerNumber (),
-            observedModel.getPlayerNumber  ()
-          );
-          message3D.setText (messageText);
-          message3D.showFor (1000);
-          changePlayer    ();
-//          activePlayer = -1;
-        }
+        observingModel.getCharacterInfo ().setDefending (true);
+        observingModel.setCanAct                        (false);
       }
-      // Enemy unit is null?
       else
       {
-        System.out.println ("[?] Collision with NULL detected.");
+        observedModel.getCharacterInfo ().setDefending (true);
+        observedModel.setCanAct                        (false);
       }
     }
+    else if (isSamePlayerCollision (observingModel, observedModel))
+    {
+      return;
+    }
+    else if (isDeadModelCollision (observingModel, observedModel))
+    {
+      return;
+    }
+    else
+    {
+      showMessage3D ("ATTACK", 1000);
+      
+      // Determine which is the "active" model and which the target.
+      if (playerManager.isActivePlayer (observingModel.getPlayerNumber ()))
+      {
+        attackingModel = observingModel;
+        targetModel    = observedModel;
+      }
+      else
+      {
+        attackingModel = observedModel;
+        targetModel    = observingModel;
+      }
+      
+      System.out.format ("%s attacks %s%n", attackingModel, targetModel);
+      
+      attackHandler = new AttackHandler ();
+      attackHandler.processAttack       (attackingModel, targetModel);
+      
+      attackingModel.setCanAct (false);
+    }
+    
+    
+    boolean isPlayerDone = true;
+    boolean hasPlayerWon = true;
+    
+    isPlayerDone = isPlayerDone  (activePlayer);
+    hasPlayerWon = hasPlayerLost (inactivePlayer);
+    
+    System.out.println (detectMarkers.getMarkerModelsForPlayer (1));
+    System.out.println (detectMarkers.getMarkerModelsForPlayer (2));
+    
+    if (hasPlayerWon)
+    {
+      gameState = GameState.OVER;
+      JOptionPane.showMessageDialog (null, "PLAYER " + activePlayer + " HAS WON!");
+      return;
+    }
+    
+    if (isPlayerDone)
+    {
+      changePlayer ();
+    }
+    
+    printData (null);
+  }
+  
+  
+  
+  //////////////////////////////////////////////////////////////////////
+  // -- Implementation of methods from "MarkerModelListener".      -- //
+  //////////////////////////////////////////////////////////////////////
+  
+  @Override
+  public void markerModelUpdated (MarkerModel markerModel)
+  {
+//    if (gameState.equals (GameState.PREPARING))
+//    {
+//      if (isMarkerModelSearchingPlayer (markerModel))
+//      {
+//        if (isMarkerModelOnLeftArenaSide (markerModel))
+//        {
+//          markerModel.setPlayerNumber (Player.PLAYER_1);
+//          System.out.format (">>>> MultiNyAR.markerModelUpdated(): %s for %s%n", markerModel, Player.PLAYER_1);
+//        }
+//        else
+//        {
+//          markerModel.setPlayerNumber (Player.PLAYER_2);
+//          System.out.format (">>>> MultiNyAR.markerModelUpdated(): %s for %s%n", markerModel, Player.PLAYER_2);
+//        }
+//      }
+//      else
+//      {
+//        gameState = GameState.RUNNING;
+//        
+//        setMarkerModelsActState (Player.PLAYER_1, Player.PLAYER_2);
+//      }
+//    }
+    
+    if (isMarkerModelSearchingPlayer (markerModel))
+    {
+      if (isMarkerModelOnLeftArenaSide (markerModel))
+      {
+        markerModel.setPlayerNumber (Player.PLAYER_1);
+        System.out.format (">>>> MultiNyAR.markerModelUpdated(): %s for %s%n", markerModel, Player.PLAYER_1);
+      }
+      else
+      {
+        markerModel.setPlayerNumber (Player.PLAYER_2);
+        System.out.format (">>>> MultiNyAR.markerModelUpdated(): %s for %s%n", markerModel, Player.PLAYER_2);
+      }
+      
+      setMarkerModelStates (markerModel);
+    }
+//    else
+//    {
+//      setMarkerModelsActState (Player.PLAYER_1, Player.PLAYER_2);
+//    }
+    
+    printData (markerModel);
+    characterStatusPanel.update ();
+  }
+  
+  
+  
+  //////////////////////////////////////////////////////////////////////
+  // -- Implementation of auxiliary methods.                       -- //
+  //////////////////////////////////////////////////////////////////////
+  
+  private void printData (MarkerModel markerModel)
+  {
+    StringBuilder output = new StringBuilder ();
+    
+    output.append ("Time stamp: ");
+    output.append (System.currentTimeMillis ());
+    output.append ("\n");
+    
+    for (MarkerModel currentModel : detectMarkers.getMarkerModels ())
+    {
+      output.append ("[");
+      output.append (currentModel.getPlayerNumber ());
+      output.append ("] ");
+      
+      if (! currentModel.getCharacterInfo ().isAlive ())
+      {
+        output.append ("{\u271D} ");
+      }
+      
+      if ((markerModel != null) && (currentModel.equals (markerModel)))
+      {
+        output.append ("# ");
+      }
+      
+      if (currentModel.getCharacterInfo () != null)
+      {
+        output.append (currentModel.getModelName ());
+        output.append (": ");
+        output.append (currentModel.getCharacterInfo ().getStatistics ());
+      }
+      
+      output.append (" at ");
+      output.append (currentModel.getPosition ());
+      
+      if (currentModel.getCharacterInfo ().isDefending ())
+      {
+        output.append ("<DEFENSE> ");
+      }
+      
+      if (currentModel.canAct ())
+      {
+        output.append (" [can_act]");
+      }
+      
+      output.append ("   props: ");
+      output.append (currentModel.getProperties ());
+      
+      output.append ("\n");
+    }
+    
+    setTestText (output.toString ());
   }
   
   private void changePlayer ()
   {
-    int previousActivePlayer = activePlayer;
+    int previousActivePlayer = 0;
+    int currentActivePlayer  = 0;
     
-    if (previousActivePlayer == 1)
-    {
-      activePlayer = 2;
-    }
-    else
-    {
-      activePlayer = 1;
-    }
+    previousActivePlayer = playerManager.getActivePlayer ();
+    playerManager.activateNextPlayer                     ();
+    currentActivePlayer  = playerManager.getActivePlayer ();
     
     // Unmark the previous active player's characters.
     for (MarkerModel model : detectMarkers.getMarkerModelsForPlayer (previousActivePlayer))
     {
-      model.setMarked (false);
+//      model.setMarked (false);
+      model.setCanAct (false);
+      
+      if (! model.getCharacterInfo ().isAlive ())
+      {
+        model.setCanCollide (false);
+      }
     }
     
     // Mark the current active player's characters.
-    for (MarkerModel model : detectMarkers.getMarkerModelsForPlayer (activePlayer))
+    for (MarkerModel model : detectMarkers.getMarkerModelsForPlayer (currentActivePlayer))
     {
-      model.setMarked (true);
+      if (model.getCharacterInfo ().isAlive ())
+      {
+//        model.setMarked (true);
+        model.setCanAct (true);
+      }
+      else
+      {
+//        model.setMarked     (false);
+        model.setCanAct     (false);
+        model.setCanCollide (false);
+      }
+    }
+  }
+  
+  private void updateMarkerModelStates ()
+  {
+    for (MarkerModel model : detectMarkers.getMarkerModels ())
+    {
+      boolean isModelOfActivePlayer = false;
+      boolean isAlive               = false;
+      
+      isModelOfActivePlayer = playerManager.isActivePlayer (model.getPlayerNumber ());
+      isAlive               = model.getCharacterInfo ().isAlive ();
+      
+      if (isModelOfActivePlayer && isAlive)
+      {
+        model.setCanAct (true);
+      }
+      else
+      {
+        model.setCanAct (false);
+      }
     }
   }
   
   
-  
-  private J3dNyARParam readCameraParams(String fnm)
+  private J3dNyARParam readCameraParams (String cameraParameterFileName)
   {
-    // TODO: ADDED BY MYSELF.
     J3dNyARParam cameraParams = null;  
     try
     {
+        // XXX: INVALID!.
 //      cameraParams = new J3dNyARParam();
 //      cameraParams.loadARParamFromFile(fnm);
       
@@ -217,7 +406,7 @@ implements   CollisionListener
       {
         cameraParams = (J3dNyARParam) J3dNyARParam.loadARParamFile
         (
-          new FileInputStream (new File (fnm))
+          new FileInputStream (new File (cameraParameterFileName))
         );
       }
       catch (IOException ioe)
@@ -225,18 +414,19 @@ implements   CollisionListener
         ioe.printStackTrace ();
       }
       
-      cameraParams.changeScreenSize (PWIDTH, PHEIGHT);
+      cameraParams.changeScreenSize (PANEL_WIDTH, PANEL_HEIGHT);
     }
-    catch(NyARException e)
+    catch (NyARException e)
     {
-      System.out.println("Could not read camera parameters from " + fnm);
-      System.exit(1);
+      System.out.println ("Could not read camera parameters from " +
+                          cameraParameterFileName);
+      System.exit        (1);
     }
     return cameraParams;
   }  // end of readCameraParams()
-
-
-
+  
+  
+  
   private Canvas3D createCanvas3D()
   /* Build a 3D canvas for a Universe which contains
      the 3D scene and view 
@@ -253,17 +443,17 @@ implements   CollisionListener
     locale.addBranchGraph (createSceneGraph ());   // add the scene
     
     // get the preferred graphics configuration for the default screen
-    config = SimpleUniverse.getPreferredConfiguration();
+    config = SimpleUniverse.getPreferredConfiguration ();
     
     c3d    = new Canvas3D (config);
     locale.addBranchGraph (createView (c3d));  // add view branch
     
     return c3d;
   }  // end of createCanvas3D()
-
-
-
-  private BranchGroup createSceneGraph()
+  
+  
+  
+  private BranchGroup createSceneGraph ()
   /* The scene graph:
          sceneBG 
                ---> lights
@@ -276,15 +466,17 @@ implements   CollisionListener
                ---> behavior  (controls the bg and the tg's of the models)
   */
   {
-    BranchGroup   sceneBG              = null;
-    Background    background           = null;
-    MarkerModel   robotMarkerModel     = null;
-    MarkerModel   cowMarkerModel       = null;
-    MarkerModel   sphereBoyMarkerModel = null;
-//    DetectMarkers detectMarkers        = null;
+    BranchGroup         sceneBG             = null;
+    Background          background          = null;
+//    MarkerModel         cowMarkerModel      = null;
+    MarkerModel         bunnyMarkerModel    = null;
+    MarkerModel         snakeMarkerModel    = null;
+    MarkerModelFactory markerObjectFactory = null;
     
-    sceneBG    = new BranchGroup ();
-    background = makeBackground  ();
+    
+    sceneBG             = new BranchGroup         ();
+    background          = makeBackground          ();
+    markerObjectFactory = new MarkerModelFactory (this, detectMarkers);
     
     lightScene       (sceneBG);        // add lights
     sceneBG.addChild (background);     // add background
@@ -292,91 +484,71 @@ implements   CollisionListener
 //    detectMarkers = new DetectMarkers  (this);
     detectMarkers.addCollisionListener (this);
     
-    // the "hiro" marker uses a robot model, scaled by 0.15 units, with no coords file
-//    MarkerModel mm1 = new MarkerModel("patt.hiro", "robot.3ds", 0.15, false);
-    robotMarkerModel = new MarkerModel ("marker_circleSegment.pat", "robot.3ds", 0.15, false);
-    robotMarkerModel.setPlayerNumber (1);
-    robotMarkerModel.getActiveMark ().setAppearance (DefaultMaterials.getAppearance (DefaultMaterials.MaterialName.KILGARD_YELLOW_RUBBER));
-//    robotMarkerModel.setMarked       (true);
-    // creation was successful
-    addAndRegisterMarker (robotMarkerModel, sceneBG, detectMarkers);
-//    if (mm1.getMarkerInfo() != null)
-//    {
-//      sceneBG.addChild (mm1.getMoveTg ());
-//      detectMarkers.addMarker (mm1);
-//    }
     
-    // the "kanji" marker uses a cow model, scaled by 0.12 units, with coords file
-    cowMarkerModel = new MarkerModel("patt.kanji", "cow.obj", 0.12, true);
-    cowMarkerModel.setPlayerNumber (9);
-    addAndRegisterMarker (cowMarkerModel, sceneBG, detectMarkers);
+//    // the "kanji" marker uses a cow model, scaled by 0.12 units, with coords file
+//    cowMarkerModel = new MarkerModel ("patt.kanji", "cow.obj", 0.12, true);
+//    cowMarkerModel.setPlayerNumber (9);
+//    addAndRegisterMarker (cowMarkerModel, sceneBG, detectMarkers);
+    
+    /*
+    addAndRegisterMarkerNode
+    (
+      new MarkerNode ("marker_BlackWhiteShield_001.pat",
+                      new Sphere (0.1f, new WireframeAppearance ()),
+                      "Sphere", 0.15, false),
+      sceneBG,
+      detectMarkers
+    );
+    */
     
     
-    // the "black-white-shield_001" marker uses a robot model, scaled by 0.15 units, with no coords file
-//    MarkerModel mmShield = new MarkerModel("black-white-shield_001.pat", "bunny.obj", 0.15, false);
-    sphereBoyMarkerModel = new MarkerModel ("marker_BlackWhiteShield_001.pat", "Figur_002.wrl", 0.15, false);
-//    sphereBoyMarkerModel.setCanAct (true);
-    sphereBoyMarkerModel.setPlayerNumber (2);
-//    sphereBoyMarkerModel.setMarked       (true);
-    addAndRegisterMarker (sphereBoyMarkerModel, sceneBG, detectMarkers);
-    sphereBoyMarkerModel.getActiveMark ().setAppearance (DefaultMaterials.getAppearance (DefaultMaterials.MaterialName.COLE_RED_ALLOY));
-//    ModelAppearanceAssigner appearanceAssigner = new ModelAppearanceAssigner
-//    (
-//      sphereBoyMarkerModel.getMoveTg ()
-//    );
-//    QuickShaderAppearance   shaderAppearance   = new QuickShaderAppearance
-//    (
-//      "myresources/misc-test_024.vert",
-//      "myresources/misc-test_024.frag"
-//    );
-//    shaderAppearance.setMaterial (new Material
-//    (
-//      ColorConstants.RED_3F,
-//      ColorConstants.BLACK_3F,
-//      ColorConstants.RED_3F,
-//      ColorConstants.WHITE_3F,
-//      100.0f
-//    ));
-//    shaderAppearance.setMaterial (OpenGLMaterials.getMaterial (OpenGLMaterials.MaterialName.GOLD_2));
-//    appearanceAssigner.assignAppearance (shaderAppearance);
+    
+    bunnyMarkerModel = markerObjectFactory.getMarkerModelByName ("bunny", Player.SEARCHING_PLAYER);
+//    bunnyMarkerModel.setMarked (true);
+    addAndRegisterMarkerModel (bunnyMarkerModel, sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("bird", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
+    
+    snakeMarkerModel = markerObjectFactory.getMarkerModelByName ("snake", Player.SEARCHING_PLAYER);
+    addAndRegisterMarkerModel (snakeMarkerModel, sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("boy", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
+    
+//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("mixer", -1), sceneBG, detectMarkers);
+//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("snow", -1), sceneBG, detectMarkers);
+//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("characterSwapper", -1), sceneBG, detectMarkers);
+    
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseMarker1", Player.PLAYER_1), sceneBG, detectMarkers);
     
     
-    // create a NyAR multiple marker behaviour
+    // Create a NyAR multiple marker behavior.
     sceneBG.addChild (new NyARMarkersBehavior (cameraParams, background, detectMarkers));
     
     // Append the message object to the scene graph.
     sceneBG.addChild (message3D.getNode3D ());
+//    sceneBG.addChild (characterStatusPanel.getNode ());
     
     sceneBG.compile ();       // optimize the sceneBG graph
     return sceneBG;
   }  // end of createSceneGraph()
-
-
-
-  private void lightScene(BranchGroup sceneBG)
+  
+  
+  
+  private void lightScene (BranchGroup sceneBG)
   /* One ambient light, 2 directional lights */
   {
     Color3f        white  = new Color3f        (1.0f, 1.0f, 1.0f);
-    BoundingSphere bounds = new BoundingSphere (new Point3d(0,0,0), BOUNDSIZE); 
+    BoundingSphere bounds = new BoundingSphere (new Point3d (0,0,0), BOUNDS_SIZE); 
 
     // Set up the ambient light
     AmbientLight ambientLightNode = new AmbientLight(white);
     ambientLightNode.setInfluencingBounds(bounds);
     sceneBG.addChild(ambientLightNode);
     
-    /*
-    // TODO: OWN TEST
-    // Set up the directional lights
-    Vector3f light1Direction  = new Vector3f(0.0f, 3.0f, -1.0f);
-    Vector3f light2Direction  = new Vector3f(0.0f, -1.0f, 1.0f);
-    */
-    
     // Set up the directional lights
     Vector3f light1Direction  = new Vector3f(-1.0f, -1.0f, -1.0f);
        // left, down, backwards 
     Vector3f light2Direction  = new Vector3f(1.0f, -1.0f, 1.0f);
        // right, down, forwards
-
+    
     DirectionalLight light1 =  new DirectionalLight(white, light1Direction);
     light1.setInfluencingBounds(bounds);
     sceneBG.addChild(light1);
@@ -385,10 +557,10 @@ implements   CollisionListener
     light2.setInfluencingBounds(bounds);
     sceneBG.addChild(light2);
   }  // end of lightScene()
-
-
-
-  private Background makeBackground()
+  
+  
+  
+  private Background makeBackground ()
   // the background will be the current image captured by the camera
   { 
     Background     bg     = new Background     ();
@@ -397,13 +569,13 @@ implements   CollisionListener
     bg.setApplicationBounds (bounds);
     bg.setImageScaleMode    (Background.SCALE_FIT_ALL);
     bg.setCapability        (Background.ALLOW_IMAGE_WRITE);  // so can change image
-
+    
     return bg;
   }  // end of makeBackground()
-
-
-
-  private BranchGroup createView(Canvas3D c3d)
+  
+  
+  
+  private BranchGroup createView (Canvas3D c3d)
   // create a view graph using the camera parameters
   {
     BranchGroup    viewBG        = new BranchGroup    ();
@@ -417,49 +589,171 @@ implements   CollisionListener
     
     view.setPhysicalBody        (new PhysicalBody());
     view.setPhysicalEnvironment (new PhysicalEnvironment());
-
+    
     view.setCompatibilityModeEnable (true);
-    view.setProjectionPolicy (View.PERSPECTIVE_PROJECTION);
-    view.setLeftProjection   (cameraParams.getCameraTransform ());   // camera projection
+    view.setProjectionPolicy        (View.PERSPECTIVE_PROJECTION);
+    view.setLeftProjection          (cameraParams.getCameraTransform ());   // camera projection
     
     viewTransform.rotY           (Math.PI);   // rotate 180 degrees
     viewTransform.setTranslation (new Vector3d(0.0, 0.0, 0.0));   // start at origin
     viewGroup.setTransform       (viewTransform);
     viewGroup.addChild           (viewPlatform);
-
+    
     viewBG.addChild (viewGroup);
-
+    
     return viewBG;
   }  // end of createView()
 
 
 
-  public void setStatus(String msg)
+  public void setStatus (String msg)
   // called from DetectMarkers
   {
-    statusTA.setText(msg);
+    statusTextArea.setText (msg);
+    
+    printData (null);
   }  // end of setStatus()
   
+  public void setTestText (String testText)
+  {
+    testingTextArea.setText (testText);
+  }
   
-  private void addAndRegisterMarker
+  private void addAndRegisterMarkerModel
   (
     MarkerModel   markerModel,
     BranchGroup   sceneBG,
     DetectMarkers detectMarkers
   )
   {
-    if (markerModel.getMarkerInfo() != null)
+    if (markerModel.getMarkerInfo () != null)
     {
       sceneBG.addChild        (markerModel.getMoveTg ());
       detectMarkers.addMarker (markerModel);
+      markerModel.addMarkerModelListener (this);
     }
   }
-
-
+  
+  private boolean isNullCollision
+  (
+    MarkerModel observingModel,
+    MarkerModel observedModel
+  )
+  {
+    return ((observingModel == null) || (observedModel  == null));
+  }
+  
+  private boolean isDefenseGesture
+  (
+    MarkerModel observingModel,
+    MarkerModel observedModel
+  )
+  {
+    if ((observingModel.isCharacter     () && observedModel.isDefenseMarker ()) ||
+        (observingModel.isDefenseMarker () && observedModel.isCharacter    ()))
+    {
+      return (observingModel.getPlayerNumber () == observedModel.getPlayerNumber ());
+    }
+    else
+    {
+      return false;
+    }
+  }
+  
+  private boolean isSamePlayerCollision
+  (
+    MarkerModel observingModel,
+    MarkerModel observedModel
+  )
+  {
+    return (observingModel.getPlayerNumber () == observedModel.getPlayerNumber ());
+  }
+  
+  private boolean isDeadModelCollision
+  (
+    MarkerModel observingModel,
+    MarkerModel observedModel
+  )
+  {
+    return ((! observingModel.getCharacterInfo ().isAlive ()) ||
+            (! observedModel.getCharacterInfo  ().isAlive ()));
+  }
+  
+  private int getActivePlayer ()
+  {
+    return playerManager.getActivePlayer ();
+  }
+  
+  private int getInactivePlayer ()
+  {
+    return playerManager.getInactivePlayer ();
+  }
+  
+  private boolean isPlayerDone (int player)
+  {
+    for (MarkerModel model : detectMarkers.getMarkerModelsForPlayer (player))
+    {
+      if ((model.isCharacter ()) && (model.canAct ()))
+      {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  private boolean hasPlayerLost (int player)
+  {
+    for (MarkerModel model : detectMarkers.getMarkerModelsForPlayer (player))
+    {
+      if ((model.isCharacter ()) && (model.getCharacterInfo ().isAlive ()))
+      {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  private boolean isMarkerModelOnLeftArenaSide (MarkerModel markerModel)
+  {
+    if (markerModel.getPosition () == null)
+    {
+      return false;
+    }
+    else
+    {
+      return (markerModel.getPosition ().getX () > 0.0);
+    }
+  }
+  
+  private boolean isMarkerModelSearchingPlayer (MarkerModel markerModel)
+  {
+    return (markerModel.getPlayerNumber () == Player.SEARCHING_PLAYER);
+  }
+  
+  private void setMarkerModelStates (MarkerModel markerModel)
+  {
+    if (playerManager.isActivePlayer (markerModel.getPlayerNumber ()))
+    {
+      markerModel.setCanAct (true);
+      
+      if (! markerModel.getCharacterInfo ().isAlive ())
+      {
+        markerModel.setCanCollide (false);
+      }
+    }
+    else
+    {
+      markerModel.setCanAct (false);
+    }
+  }
+  
   // ------------------------------------------------------------
 
   public static void main(String args[])
-  {  new MultiNyAR();  }
-    
-    
+  {
+    new MultiNyAR();
+  }
+  
 } // end of MultiNyAR class

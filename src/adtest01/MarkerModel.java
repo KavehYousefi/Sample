@@ -2,6 +2,8 @@ package adtest01;
 // MarkerModel.java
 // Andrew Davison, ad@fivedots.coe.psu.ac.th, April 2010
 
+import java.awt.image.BufferedImage;
+
 /* Holds NyARToolkit marker information and the Java3D scene graph for its
    associated model.
 
@@ -10,125 +12,143 @@ package adtest01;
 */
 
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
-import commies.ActiveMark;
-import commies.BoundsRenderer;
-import commies.CharacterUserData;
-import commies.DiskBoundsRenderer;
+import ky.ActiveMark;
+import ky.DiskBoundsRenderer;
+import ky.angle.EulerAngles;
+import ky.angle.SelmanMatrixToEulerAngles;
+import ky.appearance.ColorConstants;
+import ky.gamelogic.CharacterInfo;
+import ky.gamelogic.Effect;
+import ky.gamelogic.Element;
+import ky.gamelogic.Statistics;
 import jp.nyatla.nyartoolkit.core.*;
 import jp.nyatla.nyartoolkit.core.transmat.NyARTransMatResult;
 
 
-
 public class MarkerModel
 {
-  private final String MARKER_DIR = "Data/";
-  private final double MARKER_SIZE = 0.095;    // 95 cm width and height in Java 3D world units
-
-
-  private String   markerName, modelName;
-  private NyARCode markerInfo = null;     // NYArToolkit marker details
-
-  private TransformGroup moveTg;      // for moving the marker model
-
-  private Switch  visSwitch;           // for changing the model's visibility
-  private boolean isVisible;
-
-  private SmoothMatrix sMat;          // for smoothing the transforms applied to the model
-
-  // details about a model's position and orientation (in degrees)
-  private Point3d posInfo = null;
-  private Point3d rotsInfo = null;
-
-  private int numTimesLost = 0;   // number of times marker for this model not detected
+  private static final double MARKER_SIZE   = 0.095;    // 95 cm width and height in Java 3D world units
+  private static final int    MARKER_WIDTH  = 16;
+  private static final int    MARKER_HEIGHT = 16;
   
-  // @TODO Added by me.
-  private BoundsRenderer interactionBounds;
+  private Path     markerFilePath;
+  private String   modelName;
+  private NyARCode markerInfo;         // NYArToolkit marker details
   
-  private boolean            canAct;
-  private int                playerNumber;
-  private boolean            isMarked;
-  private ActiveMark         activeMark;
-  private DiskBoundsRenderer diskBoundsRenderer;
-  private double             interactionRadius;
+  // For moving the marker model
+  private TransformGroup     moveTransformGroup;
+  
+  // For changing the model's visibility
+  private Switch             visibilitySwitch;
+  private boolean            isVisible;
+  
+  // For smoothing the transforms applied to the model
+  private SmoothMatrix       smoothMatrix;
+  
+  // Number of times marker for this model not detected.
+  private int                numTimesLost = 0;
+  
+  protected MarkerModelType markerObjectType;
+  protected Point3d          posInfo;      // Model position.
+  protected EulerAngles      orientation;  // Model orientation.
+  
+  private boolean                   canAct;
+  private boolean                   canCollide;
+  private int                       playerNumber;
+  private ActiveMark                activeMark;
+  private DiskBoundsRenderer        diskBoundsRenderer;
+  private CharacterInfo             characterInfo;
+  // Holds main 3D content; directly under the "visibilitySwitch".
+  private TransformHierarchy        transformHierarchy;
+  private Effect                    effect;
+  private List<MarkerModelListener> listeners;
+  private CollisionPolicy           collisionPolicy;
+  private List<String>              properties;
+  private BufferedImage             icon;
   
   
+  /**
+   * <div class="introConstructor">
+   *   Creates a marker model.
+   * </div>
+   * 
+   * @param markerFilePath      The file containing the marker pattern.
+   * @param modelName           A name for the model.
+   * @param transformHierarchy  The transform hierarchy containing the
+   *                            3D content.
+   */
   public MarkerModel
   (
-    String  markerFnm,
-    String  modelFnm,
-    double  scale,
-    boolean hasCoords
+    Path               markerFilePath,
+    String             modelName,
+    TransformHierarchy transformHierarchy
   )
   {
-    markerName = markerFnm;
-    // remove filename extension
-    modelName  = modelFnm.substring (0, modelFnm.lastIndexOf ('.'));
-
+    this.markerInfo       = null;
+    this.markerFilePath   = markerFilePath;
+    this.modelName        = modelName;
+    this.effect           = null;
+    this.markerObjectType = MarkerModelType.EFFECT;
+    this.posInfo          = null;
+    this.orientation      = null;
+    this.listeners        = new ArrayList<MarkerModelListener> ();
+    this.collisionPolicy  = createCollisionPolicy              ();
+    this.playerNumber     = Player.NO_PLAYER;
+    this.properties       = new ArrayList<String>              ();
+    this.icon             = createEmptyIcon                    ();
+    
     // build a branch for the model: TG --> Switch --> TG --> model
-
-    // load the model, with scale and coords info
-    TransformGroup modelTG = loadModel (modelFnm, scale, hasCoords);
-
+    this.transformHierarchy = transformHierarchy;
+    
     // create switch for model visibility 
-    visSwitch = new Switch  ();
-    visSwitch.setCapability (Switch.ALLOW_SWITCH_WRITE);
-    visSwitch.addChild      (modelTG);
-    visSwitch.setWhichChild (Switch.CHILD_NONE );   // make invisible
+    visibilitySwitch = new Switch  ();
+    visibilitySwitch.setCapability (Switch.ALLOW_SWITCH_WRITE);
+    visibilitySwitch.addChild      (transformHierarchy.getRootTransformGroup ());
+    visibilitySwitch.setWhichChild (Switch.CHILD_NONE );   // make invisible
     isVisible = false;
     
-    
-    interactionBounds = new BoundsRenderer
-    (
-      new BoundingSphere    (modelTG.getBounds ()),
-      new CharacterUserData (0, 0)
-    );
 //    modelTG.addChild (interactionBounds.getRootNode ());
-    interactionBounds.setColor (new Color3f (1.0f, 1.0f, 0.0f));
     this.canAct             = false;
-    this.isMarked           = false;
+    this.canCollide         = true;
     this.activeMark         = new ActiveMark ();
-    this.diskBoundsRenderer = new DiskBoundsRenderer (0.10, 20);
+    this.diskBoundsRenderer = new DiskBoundsRenderer (0.160000 / 2.0, 20);
     this.activeMark.setPosition (new Point3d  (0.000, 0.000, 0.100));
     this.activeMark.setScaling  (new Vector3d (0.015, 0.030, 0.015));
-    this.interactionRadius  = 1.0;
+    this.characterInfo      = new CharacterInfo (modelName, Element.NONE);
     
     
     // create transform group for positioning the model
-    moveTg = new TransformGroup ();
-    moveTg.setCapability        (TransformGroup.ALLOW_TRANSFORM_WRITE);  // so this tg can change
-    moveTg.addChild             (visSwitch);
+    moveTransformGroup = new TransformGroup ();
+    moveTransformGroup.setCapability        (TransformGroup.ALLOW_TRANSFORM_WRITE);  // so this tg can change
+    moveTransformGroup.addChild             (visibilitySwitch);
     
-    moveTg.addChild (activeMark.getRootNode         ());
-    moveTg.addChild (diskBoundsRenderer.getRootNode ());
-    
-//    BoundingBox modelBounds = new BoundingBox (moveTg.getBounds ());
-//    Point3d     modelUpperCorner = new Point3d ();
-//    modelBounds.getLower (modelUpperCorner);
-//    System.out.println (modelUpperCorner);
+    moveTransformGroup.addChild (activeMark.getRootNode         ());
+    moveTransformGroup.addChild (diskBoundsRenderer.getRootNode ());
     
     // load marker info
     try
     {
       /*
-       * TODO: INVALID!
+       * XXX: INVALID!
       markerInfo = new NyARCode(16,16);    // default integer width, height
       markerInfo.loadARPattFromFile(MARKER_DIR+markerName);  // load marker image
       */
       
-      // TODO: ADDED BY ME.
       try
       {
         markerInfo = NyARCode.createFromARPattFile
         (
-          new FileInputStream (new File (MARKER_DIR + markerName)),
-          16, 16
+          new FileInputStream (markerFilePath.toFile ()),
+          MARKER_WIDTH, MARKER_HEIGHT
         );
       }
       catch (FileNotFoundException e)
@@ -136,26 +156,15 @@ public class MarkerModel
         e.printStackTrace();
       }
     }
-    catch(NyARException e)
+    catch (NyARException e)
     {
-      System.out.println(e);  
+      System.out.println (e);  
       markerInfo = null;
     }
-  
-    sMat = new SmoothMatrix();
+    
+    smoothMatrix = new SmoothMatrix();
   }  // end of MarkerModel()
   
-  
-  
-  public BoundsRenderer getInteractionBounds ()
-  {
-    return interactionBounds;
-  }
-  
-  public void setInteractionBounds (BoundsRenderer interactionBounds)
-  {
-    this.interactionBounds = interactionBounds;
-  }
   
   public boolean canAct ()
   {
@@ -165,6 +174,30 @@ public class MarkerModel
   public void setCanAct (boolean canAct)
   {
     this.canAct = canAct;
+    
+    if (canAct)
+    {
+      diskBoundsRenderer.setVisible (true);
+    }
+    else
+    {
+      diskBoundsRenderer.setVisible (false);
+    }
+  }
+  
+  public boolean canCollide ()
+  {
+    return canCollide;
+  }
+  
+  public void setCanCollide (boolean canCollide)
+  {
+    this.canCollide = canCollide;
+  }
+  
+  public boolean canCollideWith (MarkerModel otherModel)
+  {
+    return collisionPolicy.canCollideWith (this, otherModel);
   }
   
   public int getPlayerNumber ()
@@ -175,19 +208,51 @@ public class MarkerModel
   public void setPlayerNumber (int playerNumber)
   {
     this.playerNumber = playerNumber;
+    
+    setActiveBoundsAppearance (playerNumber);
   }
   
-  public void setMarked (boolean isMarked)
+  public CharacterInfo getCharacterInfo ()
   {
-    if (isMarked)
-    {
-      activeMark.show ();
-    }
-    else
-    {
-      activeMark.hide ();
-    }
+    return characterInfo;
   }
+  
+  public void setCharacterInfo (CharacterInfo characterInfo)
+  {
+    this.characterInfo = characterInfo;
+  }
+  
+  public Statistics getStatistics ()
+  {
+    return characterInfo.getStatistics ();
+  }
+  
+  public boolean isCharacter ()
+  {
+    return markerObjectType.equals (MarkerModelType.CHARACTER);
+  }
+  
+  public boolean isEffect ()
+  {
+    return markerObjectType.equals (MarkerModelType.EFFECT);
+  }
+  
+  public boolean isDefenseMarker ()
+  {
+    return markerObjectType.equals (MarkerModelType.DEFENSE_MARKER);
+  }
+  
+//  public void setMarked (boolean isMarked)
+//  {
+//    if (isMarked)
+//    {
+//      activeMark.show ();
+//    }
+//    else
+//    {
+//      activeMark.hide ();
+//    }
+//  }
   
   public ActiveMark getActiveMark ()
   {
@@ -196,8 +261,12 @@ public class MarkerModel
   
   public void setInteractionRadius (double interactionRadius)
   {
-    this.interactionRadius = interactionRadius;
     this.diskBoundsRenderer.setDiskRadius (interactionRadius);
+  }
+  
+  public DiskBoundsRenderer getBoundsRenderer ()
+  {
+    return diskBoundsRenderer;
   }
   
   
@@ -210,107 +279,56 @@ public class MarkerModel
   
   
   
-  private TransformGroup loadModel(String modelFnm, double scale, boolean hasCoords)
-  // load the model, rotating and scaling it
+  
+  
+  public String getNameInfo ()
   {
-    PropManager propMan = new PropManager (modelFnm, hasCoords);  
-    
-    // get the TG for the prop (model)
-    TransformGroup propTG = propMan.getTG();
-
-    // rotate and scale the prop
-    Transform3D modelT3d = new Transform3D ();
-    modelT3d.rotX (Math.PI/2.0);    
-         // the prop lies flat on the marker; rotate forwards 90 degrees so it is standing
-    Vector3d scaleVec = calcScaleFactor (propTG, scale);   // scale the prop
-    modelT3d.setScale (scaleVec);
-
-    TransformGroup modelTG = new TransformGroup (modelT3d);
-    modelTG.addChild (propTG);
-
-    return modelTG;
-  }  // end of loadModel()
-
-
-
-  private Vector3d calcScaleFactor (TransformGroup modelTG, double scale)
-  // Scale the prop based on its original bounding box size
+    return markerFilePath.getFileName () + " / " + modelName;
+  }
+  
+  public NyARCode getMarkerInfo ()
   {
-     BoundingBox boundbox = new BoundingBox (modelTG.getBounds ());
-     Point3d     lower    = null;
-     Point3d     upper    = null;
-     
-     System.out.println(boundbox);
-     
-     // obtain the upper and lower coordinates of the box
-     lower = new Point3d ();
-     boundbox.getLower   (lower);
-     upper = new Point3d ();
-     boundbox.getUpper   (upper);
-     
-     // store the largest X, Y, or Z dimension and calculate a scale factor
-     double max = 0.0;
-     if (Math.abs (upper.x - lower.x) > max)
-     {
-       max = Math.abs (upper.x - lower.x);
-     }
-     
-     if (Math.abs (upper.y - lower.y) > max)
-     {
-       max = Math.abs (upper.y - lower.y);
-     }
-     
-     if( Math.abs (upper.z - lower.z) > max)
-     {
-       max = Math.abs (upper.z - lower.z);
-     }
-     
-     double scaleFactor = scale/max;
-     System.out.printf
-     (
-       "MarkerModel.calcScaleFactor(): max dimension: %.3f;  " +
-                                       "scale factor: %.3f\n",
-       max, scaleFactor
-     );
-     
-     // limit the scaling so that a big model isn't scaled too much
-     if (scaleFactor < 0.0005)
-     {
-       scaleFactor = 0.0005;
-     }
-
-     return new Vector3d (scaleFactor, scaleFactor, scaleFactor);
-  }  // end of calcScaleFactor()
-
-
-
-  public String getNameInfo()
-  { return markerName + " / " + modelName; }
-
-  public NyARCode getMarkerInfo()
-  {  return markerInfo;  }
-
-  public double getMarkerWidth()
-  { // System.out.println("Width: " + markerInfo.getWidth());
+    return markerInfo;
+  }
+  
+  public double getMarkerWidth ()
+  {
     return MARKER_SIZE;   // markerInfo.getWidth() not valid since requires Java 3D units
   }
-
-
-  public TransformGroup getMoveTg()
-  {  return moveTg;  }
-
-
+  
+  public TransformHierarchy getTransformHierarchy ()
+  {
+    return transformHierarchy;
+  }
+  
+  public TransformGroup getMoveTg ()
+  {
+    return moveTransformGroup;
+  }
+  
+  public TransformGroup getModelTransformGroup ()
+  {
+    return transformHierarchy.getRootTransformGroup ();
+  }
+  
   public void moveModel (NyARTransMatResult transMat)
   // detected marker so update model's moveTG
   {
-    visSwitch.setWhichChild( Switch.CHILD_ALL );   // make visible
+    checkIfStillAlive ();
+    
+    if (! getCharacterInfo ().isAlive ())
+    {
+      return;
+    }
+    
+    visibilitySwitch.setWhichChild (Switch.CHILD_ALL);   // make visible
     isVisible = true;
-
-    sMat.add(transMat);
-
-    Matrix4d    mat   = sMat.get        ();
-    Transform3D t3d   = new Transform3D (mat);
-    int         flags = t3d.getType     ();
+    
+    smoothMatrix.add (transMat);
+    
+    Matrix4d    mat   = smoothMatrix.get ();
+    Transform3D t3d   = new Transform3D  (mat);
+    int         flags = t3d.getType      ();
     
     if ((flags & Transform3D.AFFINE) == 0)
     {
@@ -318,124 +336,242 @@ public class MarkerModel
     }
     else
     {
-      if (moveTg != null)
+      if (moveTransformGroup != null)
       {
-        moveTg.setTransform (t3d);
+        moveTransformGroup.setTransform (t3d);
       }
       
       // System.out.println("transformation matrix: " + mat);
       calcPosition  (mat);
       calcEulerRots (mat);
     }
+    
+    if (effect != null)
+    {
+      effect.update ();
+    }
+    
+    update ();
   }  // end of moveModel()
-
-
-
-
-  private void calcPosition(Matrix4d mat)
+  
+  public void resetNumTimesLost()
+  {
+    numTimesLost = 0;
+  }
+  
+  public void incrNumTimesLost()
+  {
+    numTimesLost++;
+  }
+  
+  public int getNumTimesLost()
+  {
+    return numTimesLost;
+  }
+  
+  public void hideModel()
+  {
+    visibilitySwitch.setWhichChild (Switch.CHILD_NONE);   // make model invisible
+    isVisible = false;
+  }
+  
+  public boolean isVisible()
+  {
+    return isVisible;
+  }
+  
+  
+  public MarkerModelType getMarkerModelType ()
+  {
+    return markerObjectType;
+  }
+  
+  public void setMarkerObjectType (MarkerModelType type)
+  {
+    this.markerObjectType = type;
+  }
+  
+  public Point3d getPosition ()
+  {
+    return posInfo;
+  }
+  
+  public EulerAngles getOrientation ()
+  {
+    return orientation;
+  }
+  
+  
+  public Effect getEffect ()
+  {
+    return effect;
+  }
+  
+  public void setEffect (Effect effect)
+  {
+    this.effect = effect;
+  }
+  
+  public void update ()
+  {
+    checkIfStillAlive ();
+    listeners.forEach (listener -> listener.markerModelUpdated (this));
+  }
+  
+  public void addMarkerModelListener (MarkerModelListener listener)
+  {
+    if (listener != null)
+    {
+      listeners.add (listener);
+    }
+  }
+  
+  public void removeMarkerModelListener (MarkerModelListener listener)
+  {
+    if (listener != null)
+    {
+      listeners.remove (listener);
+    }
+  }
+  
+  
+  public List<String> getProperties ()
+  {
+    return properties;
+  }
+  
+  public void addProperty (String property)
+  {
+    if (! properties.contains (property))
+    {
+      properties.add (property);
+    }
+  }
+  
+  public void removeProperty (String property)
+  {
+    properties.remove (property);
+  }
+  
+  public boolean hasProperty (String property)
+  {
+    return properties.contains (property);
+  }
+  
+  
+  public BufferedImage getIcon ()
+  {
+    return icon;
+  }
+  
+  public void setIcon (BufferedImage icon)
+  {
+    this.icon = icon;
+  }
+  
+  
+  @Override
+  public String toString ()
+  {
+    return String.format ("MarkerModel(name=%s, player=%s)",
+                          modelName, playerNumber);
+  }
+  
+  
+  
+  //////////////////////////////////////////////////////////////////////
+  // -- Implementation of auxiliary methods.                       -- //
+  //////////////////////////////////////////////////////////////////////
+  
+  private CollisionPolicy createCollisionPolicy ()
+  {
+    CompoundCollisionPolicy compoundPolicy = null;
+    
+    compoundPolicy = new CompoundCollisionPolicy ();
+    compoundPolicy.addPolicy (new DefaultCollisionPolicy  ());
+    compoundPolicy.addPolicy (new DistanceCollisionPolicy (0.160000));
+    compoundPolicy.addPolicy (new OpponentCollisionPolicy ());
+//    compoundPolicy.addPolicy (new DefenseMarkerCollisionPolicy ());
+    
+    return compoundPolicy;
+  }
+  
+  private void calcPosition (Matrix4d mat)
   // extract the (x,y,z) position vals stored in the matrix
   {
     // convert to cm and round
-    double x = roundToNumPlaces( mat.getElement(0,3)*100, 1);
-    double y = roundToNumPlaces( mat.getElement(1,3)*100, 1);
-    double z = roundToNumPlaces( mat.getElement(2,3)*100, 1);
-    // System.out.println(getNameInfo() + " (" + x + ", " + y + ", " + z + ")");
-    posInfo = new Point3d(x, y, z);
+    double x = roundToNumPlaces (mat.getElement(0,3) * 100.0, 1);
+    double y = roundToNumPlaces (mat.getElement(1,3) * 100.0, 1);
+    double z = roundToNumPlaces (mat.getElement(2,3) * 100.0, 1);
+    
+    posInfo = new Point3d (x, y, z);
   }  // end of reportPosition()
-
-
-
-  private double roundToNumPlaces(double val, int numPlaces) 
+  
+  private double roundToNumPlaces (double val, int numPlaces) 
   {
-    double power = Math.pow(10, numPlaces);
-    long temp = Math.round(val*power);
-    return ((double)temp)/power;
+    double power = Math.pow   (10, numPlaces);
+    long   temp  = Math.round (val * power);
+    
+    return ((double) temp)/power;
   }
-
-
-  public Point3d getPos()
-  {  return posInfo;  }
-
-
-
-  private void calcEulerRots(Matrix4d mat)
-  /* calculate the Euler rotation angles from the upper 3x3 rotation
-     components of the 4x4 transformation matrix. 
-     Based on code by Daniel Selman, December 1999
-     which is based on pseudo-code in "Matrix and Quaternion FAQ", Q37
-       http://www.j3d.org/matrix_faq/matrfaq_latest.html
-  */
+  
+  private void calcEulerRots (Matrix4d mat)
   {
-    rotsInfo = new Point3d();
-
-    rotsInfo.y = -Math.asin(mat.getElement(2,0));
-    double c = Math.cos(rotsInfo.y);
-
-    double tRx, tRy, tRz;
-    if(Math.abs(rotsInfo.y) > 0.00001) {
-      tRx = mat.getElement(2,2)/c;
-      tRy = -mat.getElement(2,1)/c;
-      rotsInfo.x = Math.atan2(tRy, tRx);
-
-      tRx = mat.getElement(0,0)/c;
-      tRy = -mat.getElement(1,0)/c;
-      rotsInfo.z = Math.atan2(tRy, tRx);
-    }
-    else {
-      rotsInfo.x  = 0.0;
-
-      tRx = mat.getElement(1,1);
-      tRy = mat.getElement(0,1);
-      rotsInfo.z = Math.atan2(tRy, tRx);
-    }
-
-    rotsInfo.x = -rotsInfo.x;
-    rotsInfo.z = -rotsInfo.z;
-
-    // ensure the values are positive by adding 2*PI if necessary...
-    if(rotsInfo.x < 0.0)
-    rotsInfo.x += 2*Math.PI;
-
-    if(rotsInfo.y < 0.0)
-      rotsInfo.y += 2*Math.PI;
-
-    if(rotsInfo.z < 0.0)
-      rotsInfo.z += 2*Math.PI;
-
-    // convert to degrees and round
-    rotsInfo.x = roundToNumPlaces( Math.toDegrees(rotsInfo.x), 0);
-    rotsInfo.y = roundToNumPlaces( Math.toDegrees(rotsInfo.y), 0);
-    rotsInfo.z = roundToNumPlaces( Math.toDegrees(rotsInfo.z), 0);
-
-    // System.out.println(getNameInfo() + " rots (" + 
-    //         rotsInfo.x + ", " + rotsInfo.y + ", " + rotsInfo.z + ")");
-  }  // end of calcEulerRots()
-
-
-  public Point3d getRots()
-  {  return rotsInfo; }
-
-
-
-  public void resetNumTimesLost()
-  {  numTimesLost = 0;  }
-
-  public void incrNumTimesLost()
-  {  numTimesLost++;  }
-
-  public int getNumTimesLost()
-  {  return numTimesLost;  }
-
-
-
-  public void hideModel()
+    SelmanMatrixToEulerAngles matrixToEulerAngles = null;
+    Matrix3d                  matrix3d            = null;
+    
+    matrixToEulerAngles = new SelmanMatrixToEulerAngles ();
+    
+    matrix3d = new Matrix3d ();
+    matrix3d.setM00 (mat.getM00 ());
+    matrix3d.setM01 (mat.getM01 ());
+    matrix3d.setM02 (mat.getM02 ());
+    matrix3d.setM10 (mat.getM10 ());
+    matrix3d.setM11 (mat.getM11 ());
+    matrix3d.setM12 (mat.getM12 ());
+    matrix3d.setM20 (mat.getM20 ());
+    matrix3d.setM21 (mat.getM21 ());
+    matrix3d.setM22 (mat.getM22 ());
+    
+    orientation = matrixToEulerAngles.getEulerAngles (matrix3d);
+  }
+  
+  private void checkIfStillAlive ()
   {
-    visSwitch.setWhichChild( Switch.CHILD_NONE );   // make model invisible
-    isVisible = false;
-  } 
-
-  public boolean isVisible()
-  {  return isVisible; }
-
-
+    int currentPower = characterInfo.getStatistics ().getCurrentPower ();
+    
+    characterInfo.getStatistics ().normalizeMinimumValues ();
+    
+    if (currentPower <= 0)
+    {
+      characterInfo.setAlive        (false);
+      hideModel                     ();
+      diskBoundsRenderer.setVisible (false);
+    }
+  }
+  
+  private void setActiveBoundsAppearance (int playerNumber)
+  {
+    Material boundsMaterial = diskBoundsRenderer.getAppearance ()
+                                                .getMaterial   ();
+    
+    if (playerNumber == 1)
+    {
+      boundsMaterial.setDiffuseColor (ColorConstants.CYAN_3F);
+    }
+    else if (playerNumber == 2)
+    {
+      boundsMaterial.setDiffuseColor (ColorConstants.RED_3F);
+    }
+    else
+    {
+      boundsMaterial.setDiffuseColor (ColorConstants.LIGHT_GRAY_3F);
+    }
+  }
+  
+  private static BufferedImage createEmptyIcon ()
+  {
+    return new BufferedImage (16, 16, BufferedImage.TYPE_4BYTE_ABGR);
+  }
+  
 }  // end of MarkerModel class

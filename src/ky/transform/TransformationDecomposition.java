@@ -4,10 +4,9 @@ package ky.transform;
 
 
 import javax.media.j3d.Transform3D;
-import javax.vecmath.Quat4d;
 
 import ky.dimension.Dimensions;
-import commies.Position;
+import ky.Position;
 
 
 public class TransformationDecomposition

@@ -2,12 +2,12 @@
 
 package ky.transform;
 
-import commies.angle.Angle;
-import commies.angle.AngleUnit;
 import safercode.CheckingUtils;
 
-import javax.vecmath.Quat4d;
 import javax.vecmath.Vector3d;
+
+import ky.angle.Angle;
+import ky.angle.AngleUnit;
 
 
 public class Orientation

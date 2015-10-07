@@ -1,7 +1,6 @@
 package ky.transform;
 
-import commies.Position;
-import commies.angle.Angle;
+import ky.Position;
 import safercode.CheckingUtils;
 
 import java.awt.geom.AffineTransform;
@@ -14,6 +13,7 @@ import javax.media.j3d.TransformGroup;
 import javax.vecmath.Vector2d;
 import javax.vecmath.Vector3d;
 
+import ky.angle.Angle;
 import ky.dimension.Dimensions;
 
 

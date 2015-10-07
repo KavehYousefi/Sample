@@ -46,9 +46,7 @@ import javax.vecmath.*;
 import jp.nyatla.nyartoolkit.core.*;
 import jp.nyatla.nyartoolkit.java3d.utils.*;
 
-import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cone;
-import com.sun.j3d.utils.geometry.Cylinder;
 
 /**
  * Java3Dサンプルプログラム
@@ -231,8 +229,9 @@ public class OwnMultiMarkers001 extends JFrame implements NyARSingleMarkerBehavi
 //    ));
 		
 		
-		BranchGroup objectModel = null;
-		objectModel = new ObjectLoader006_XJ3D ().getScene ();
+//		BranchGroup objectModel = null;
+//		objectModel = new ObjectLoader006_XJ3D ().getScene ();
+		
 //		tg.addChild (objectModel);
 //		objectModel.setBoundsAutoCompute (true);
 //		System.out.println (objectModel.getBounds ());
