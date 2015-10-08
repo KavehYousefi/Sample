@@ -38,12 +38,15 @@ public class DetectMarkers
   
   private ArrayList<MarkerModel>  markerModels;
   private int                     numberOfMarkers;
-
+  
+  @SuppressWarnings               ("unused")
   private MultiNyAR               top;    // for reporting status
   private NyARDetectMarker        detector;
-
+  
+  /* Transformation matrix for a marker, which is used to move
+   * its model.
+   */
   private NyARTransMatResult      transMat;   
-     // transformation matrix for a marker, which is used to move its model
   
   private List<CollisionListener> collisionListeners;
   private MarkerDistanceMeasurer  markerDistanceMeasurer;
@@ -214,9 +217,6 @@ public class DetectMarkers
 //            }
             
             markerModel.moveModel (transMat);
-            
-//            // XXX: EDITED BY ME -- Show model independent of confidence.
-//            markerModel.moveModel (transMat);
           }
         }
         
@@ -229,7 +229,6 @@ public class DetectMarkers
         statusInfo.append (markerIndex + ". " + markerModel.getNameInfo () + " (" + confidence + ")\n");
         addToStatusInfo   (markerModel, statusInfo);
       }
-      top.setStatus (statusInfo.toString ());   // display marker models status in the GUI
       
       
       checkForCollision ();
@@ -260,10 +259,6 @@ public class DetectMarkers
       return;
     }
     
-    /* Problem: Distances depend on camera position.
-     *          The nearer the camera, the smaller the distance gets.
-     * Solution: "Strahlensatz"?
-     */
     for (MarkerModel observingModel : markerModels)
     {
       Point3d           myPosition  = null;
@@ -356,11 +351,6 @@ public class DetectMarkers
           numDetections = detector.detectMarkerLite(rasterRGB, 100);
         }
         */
-        // XXX: OWN TEST.
-//        if (rasterRGB.hasBuffer ())
-//        {
-//          numDetections = detector.detectMarkerLite (rasterRGB, 100);
-//        }
         
         numDetections = detector.detectMarkerLite (rasterRGB, DETECTION_THRESHOLD);
       }

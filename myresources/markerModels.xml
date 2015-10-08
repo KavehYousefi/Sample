@@ -4,7 +4,7 @@
   
   <model key="bunny"
          name="Bunny">
-    <marker-file path="Data/marker_circleSegment.pat"                 />
+    <marker-file path="Data/marker-patterns_003/1.pat" />
     <graphics type="external-model">
       <external-model-file path="models/m111.off"
                            scaling="0.15"                             />
@@ -16,12 +16,12 @@
                  attack="2"
                  defense="10"                                         />
     <effect      name=""                                              />
-    <icon        path="myresources/icon_snake_001.png"                />
+    <icon        path="myresources/icon_bunny_001.png"                />
   </model>
   
   <model key="snake"
          name="Snake">
-    <marker-file path="Data/marker_BlackWhiteShield_001.pat"          />
+    <marker-file path="Data/marker-patterns_003/2.pat" />
     <graphics type="external-model">
       <external-model-file path="models/m85.off"
                            scaling="0.15"                             />
@@ -39,7 +39,7 @@
   
   <model key="bird"
          name="Birdy">
-    <marker-file path="Data/patt.hiro"                        />
+    <marker-file path="Data/marker-patterns_003/3.pat" />
     <graphics type="external-model">
       <external-model-file path="models/m34.off"
                            scaling="0.15"                             />
@@ -57,7 +57,7 @@
   
   <model key="boy"
          name="Boy">
-    <marker-file path="Data/marker_T.pat"                             />
+    <marker-file path="Data/marker-patterns_003/4.pat" />
     <graphics type="external-model">
       <external-model-file path="models/Figur_002.wrl"
                            scaling="0.15"                             />
@@ -120,6 +120,30 @@
     <marker-type type="effect"                                        />
     <element     type="none"                                          />
     <effect      name="statisticsMixer"                               />
+    <collision   allowed="false"                                      />
+  </model>
+  
+  <model key="defenseToAttack"
+         name="Defense To Attack">
+    <marker-file path="Data/patt.hiro"                                />
+    <graphics type="custom-3d-model">
+      <custom-model name=""                                           />
+    </graphics>
+    <marker-type type="effect"                                        />
+    <element     type="none"                                          />
+    <effect      name="defenseToAttack"                               />
+    <collision   allowed="false"                                      />
+  </model>
+  
+  <model key="resurrection"
+         name="Resurrection">
+    <marker-file path="Data/patt.hiro"                                />
+    <graphics type="custom-3d-model">
+      <custom-model name=""                                           />
+    </graphics>
+    <marker-type type="effect"                                        />
+    <element     type="none"                                          />
+    <effect      name="resurrection"                                  />
     <collision   allowed="false"                                      />
   </model>
   

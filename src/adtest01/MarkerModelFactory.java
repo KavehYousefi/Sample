@@ -4,7 +4,9 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import ky.gamelogic.CharacterSwapper;
+import ky.gamelogic.DefenseToAttack;
 import ky.gamelogic.RainEffect;
+import ky.gamelogic.Resurrection;
 import ky.gamelogic.StatisticsMixer;
 
 
@@ -78,6 +80,8 @@ public class MarkerModelFactory
     effectFactory.addEffect ("characterSwapper", new CharacterSwapper (multiNyAR, detectMarkers));
     effectFactory.addEffect ("rain",             new RainEffect       (multiNyAR, detectMarkers, new TransformHierarchy ()));
     effectFactory.addEffect ("statisticsMixer",  new StatisticsMixer  (multiNyAR, detectMarkers));
+    effectFactory.addEffect ("defenseToAttack",  new DefenseToAttack  (multiNyAR, detectMarkers));
+    effectFactory.addEffect ("resurrection",     new Resurrection     (multiNyAR, detectMarkers));
     
     return effectFactory;
   }

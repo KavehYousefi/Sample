@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
@@ -114,6 +115,8 @@ extends      JPanel
     oldColor   = graphics2D.getPaint ();
     clearColor = Color.DARK_GRAY;
     
+    graphics2D.setRenderingHint (RenderingHints.KEY_ANTIALIASING,
+                                 RenderingHints.VALUE_ANTIALIAS_ON);
     graphics2D.setPaint (clearColor);
     graphics2D.fillRect (0, 0, this.getWidth (), this.getHeight ());
     graphics2D.setPaint (oldColor);
@@ -136,13 +139,14 @@ extends      JPanel
     statistics = markerModel.getStatistics ();
     text       = String.format
     (
-      "%s %s Pow[%s/%s] | Att[%s/%s] | Def[%s/%s] Status%s",
+      "%s %s Pow[%s/%s] | Att[%s/%s] | Def[%s/%s] Status%s %s",
       markerModel.getCharacterInfo ().isAlive () ? "" : DECEASED_CHARACTER,
       markerModel.getModelName     (),
       statistics.getCurrentPower   (), statistics.getMaximumPower   (),
       statistics.getCurrentAttack  (), statistics.getMaximumAttack  (),
       statistics.getCurrentDefense (), statistics.getMaximumDefense (),
-      markerModel.getProperties    ()
+      markerModel.getProperties    (),
+      markerModel.getCharacterInfo ().isDefending () ? "(defensive)" : ""
     );
     
     if (markerModel.getCharacterInfo ().isAlive ())

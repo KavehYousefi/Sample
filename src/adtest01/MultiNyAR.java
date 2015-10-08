@@ -46,30 +46,27 @@ implements   CollisionListener, MarkerModelListener
   private static final int    PANEL_HEIGHT           = 240; 
   private static final double BOUNDS_SIZE            = 100.0; // larger than world
   
-  private J3dNyARParam     cameraParams;
-  private JTextArea        statusTextArea;
-  private JTextArea        testingTextArea;
+  private J3dNyARParam         cameraParams;
   
-  private Message3D        message3D;
+  private Message3D            message3D;
   private CharacterStatusPanel characterStatusPanel;
   
-  private PlayerManager    playerManager;
-  private DetectMarkers    detectMarkers;
-  private GameState        gameState;
+  private PlayerManager        playerManager;
+  private DetectMarkers        detectMarkers;
+  private GameState            gameState;
   
   
   public MultiNyAR()
   {
     super ("Multiple markers NyARToolkit Example");
     
-    this.playerManager    = new PlayerManager ();
-    this.detectMarkers    = new DetectMarkers (this);
-    this.cameraParams     = readCameraParams (CAMERA_PARAMETERS_FILE);
-    this.gameState        = GameState.RUNNING;
-    
+    this.playerManager        = new PlayerManager ();
+    this.detectMarkers        = new DetectMarkers (this);
+    this.cameraParams         = readCameraParams (CAMERA_PARAMETERS_FILE);
+    this.gameState            = GameState.RUNNING;
     this.characterStatusPanel = new CharacterStatusPanel (detectMarkers, PANEL_WIDTH, 80);
+    this.message3D            = new Message3D ();
     
-    message3D = new Message3D ();
     message3D.setPosition     (new Point3d (0.0, 0.0, 0.0));
     
     Container contentPane = getContentPane ();
@@ -82,21 +79,13 @@ implements   CollisionListener, MarkerModelListener
     
     // put the 3D canvas inside the JPanel
     canvasPanel.add (createCanvas3D (), BorderLayout.CENTER);
-    
-    // add status field to bottom of JFrame
-    statusTextArea = new JTextArea (7, 10);   // updated by DetectMarkers object (see createSceneGraph())
-    statusTextArea.setEditable(false);
-//    contentPane.add (statusTextArea, BorderLayout.SOUTH);
     contentPane.add (characterStatusPanel.getPanel (), BorderLayout.NORTH);
-    
-    testingTextArea = new JTextArea (7, 10);
-    testingTextArea.setEditable     (false);
-//    contentPane.add (testingTextArea, BorderLayout.SOUTH);
     
     // configure the JFrame
     setDefaultCloseOperation (WindowConstants.EXIT_ON_CLOSE );
     pack                     ();
     setVisible               (true);
+    setExtendedState         (getExtendedState () | JFrame.MAXIMIZED_BOTH);
     
     this.playerManager.setActivePlayer (1);
     updateMarkerModelStates            ();
@@ -109,6 +98,21 @@ implements   CollisionListener, MarkerModelListener
     message3D.hide    ();
     message3D.setText (messageText);
     message3D.showFor (durationInMilliseconds);
+  }
+  
+  public PlayerManager getPlayerManager ()
+  {
+    return playerManager;
+  }
+  
+  public int getActivePlayer ()
+  {
+    return playerManager.getActivePlayer ();
+  }
+  
+  public int getInactivePlayer ()
+  {
+    return playerManager.getInactivePlayer ();
   }
   
   
@@ -169,7 +173,7 @@ implements   CollisionListener, MarkerModelListener
     {
       return;
     }
-    else
+    else if (isValidAttack (observingModel, observedModel))
     {
       showMessage3D ("ATTACK", 1000);
       
@@ -185,8 +189,6 @@ implements   CollisionListener, MarkerModelListener
         targetModel    = observingModel;
       }
       
-      System.out.format ("%s attacks %s%n", attackingModel, targetModel);
-      
       attackHandler = new AttackHandler ();
       attackHandler.processAttack       (attackingModel, targetModel);
       
@@ -199,9 +201,6 @@ implements   CollisionListener, MarkerModelListener
     
     isPlayerDone = isPlayerDone  (activePlayer);
     hasPlayerWon = hasPlayerLost (inactivePlayer);
-    
-    System.out.println (detectMarkers.getMarkerModelsForPlayer (1));
-    System.out.println (detectMarkers.getMarkerModelsForPlayer (2));
     
     if (hasPlayerWon)
     {
@@ -227,48 +226,19 @@ implements   CollisionListener, MarkerModelListener
   @Override
   public void markerModelUpdated (MarkerModel markerModel)
   {
-//    if (gameState.equals (GameState.PREPARING))
-//    {
-//      if (isMarkerModelSearchingPlayer (markerModel))
-//      {
-//        if (isMarkerModelOnLeftArenaSide (markerModel))
-//        {
-//          markerModel.setPlayerNumber (Player.PLAYER_1);
-//          System.out.format (">>>> MultiNyAR.markerModelUpdated(): %s for %s%n", markerModel, Player.PLAYER_1);
-//        }
-//        else
-//        {
-//          markerModel.setPlayerNumber (Player.PLAYER_2);
-//          System.out.format (">>>> MultiNyAR.markerModelUpdated(): %s for %s%n", markerModel, Player.PLAYER_2);
-//        }
-//      }
-//      else
-//      {
-//        gameState = GameState.RUNNING;
-//        
-//        setMarkerModelsActState (Player.PLAYER_1, Player.PLAYER_2);
-//      }
-//    }
-    
     if (isMarkerModelSearchingPlayer (markerModel))
     {
       if (isMarkerModelOnLeftArenaSide (markerModel))
       {
         markerModel.setPlayerNumber (Player.PLAYER_1);
-        System.out.format (">>>> MultiNyAR.markerModelUpdated(): %s for %s%n", markerModel, Player.PLAYER_1);
       }
       else
       {
         markerModel.setPlayerNumber (Player.PLAYER_2);
-        System.out.format (">>>> MultiNyAR.markerModelUpdated(): %s for %s%n", markerModel, Player.PLAYER_2);
       }
       
       setMarkerModelStates (markerModel);
     }
-//    else
-//    {
-//      setMarkerModelsActState (Player.PLAYER_1, Player.PLAYER_2);
-//    }
     
     printData (markerModel);
     characterStatusPanel.update ();
@@ -329,8 +299,6 @@ implements   CollisionListener, MarkerModelListener
       
       output.append ("\n");
     }
-    
-    setTestText (output.toString ());
   }
   
   private void changePlayer ()
@@ -418,9 +386,13 @@ implements   CollisionListener, MarkerModelListener
     }
     catch (NyARException e)
     {
-      System.out.println ("Could not read camera parameters from " +
-                          cameraParameterFileName);
-      System.exit        (1);
+      JOptionPane.showMessageDialog
+      (
+        this,
+        "Could not read camera parameters from " +
+         cameraParameterFileName
+      );
+      System.exit (1);
     }
     return cameraParams;
   }  // end of readCameraParams()
@@ -516,8 +488,10 @@ implements   CollisionListener, MarkerModelListener
 //    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("snow", -1), sceneBG, detectMarkers);
 //    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("characterSwapper", -1), sceneBG, detectMarkers);
     
-    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseMarker1", Player.PLAYER_1), sceneBG, detectMarkers);
+//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseMarker1", Player.PLAYER_1), sceneBG, detectMarkers);
     
+//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseToAttack", Player.NO_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("resurrection",    Player.NO_PLAYER), sceneBG, detectMarkers);
     
     // Create a NyAR multiple marker behavior.
     sceneBG.addChild (new NyARMarkersBehavior (cameraParams, background, detectMarkers));
@@ -603,21 +577,7 @@ implements   CollisionListener, MarkerModelListener
     
     return viewBG;
   }  // end of createView()
-
-
-
-  public void setStatus (String msg)
-  // called from DetectMarkers
-  {
-    statusTextArea.setText (msg);
-    
-    printData (null);
-  }  // end of setStatus()
   
-  public void setTestText (String testText)
-  {
-    testingTextArea.setText (testText);
-  }
   
   private void addAndRegisterMarkerModel
   (
@@ -679,14 +639,18 @@ implements   CollisionListener, MarkerModelListener
             (! observedModel.getCharacterInfo  ().isAlive ()));
   }
   
-  private int getActivePlayer ()
+  private boolean isValidAttack
+  (
+    MarkerModel observingModel,
+    MarkerModel observedModel
+  )
   {
-    return playerManager.getActivePlayer ();
-  }
-  
-  private int getInactivePlayer ()
-  {
-    return playerManager.getInactivePlayer ();
+    return
+    (
+      (observingModel.getPlayerNumber () != observedModel.getPlayerNumber ()) &&
+      (observingModel.isCharacter     ()) &&
+      (observedModel.isCharacter      ())
+    );
   }
   
   private boolean isPlayerDone (int player)

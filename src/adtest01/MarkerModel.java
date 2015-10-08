@@ -40,26 +40,27 @@ public class MarkerModel
   private static final int    MARKER_WIDTH  = 16;
   private static final int    MARKER_HEIGHT = 16;
   
-  private Path     markerFilePath;
-  private String   modelName;
-  private NyARCode markerInfo;         // NYArToolkit marker details
+  private Path                      markerFilePath;
+  private String                    modelName;
+  // NYArToolkit marker details
+  private NyARCode                  markerInfo;
   
   // For moving the marker model
-  private TransformGroup     moveTransformGroup;
+  private TransformGroup            moveTransformGroup;
   
   // For changing the model's visibility
-  private Switch             visibilitySwitch;
-  private boolean            isVisible;
+  private Switch                    visibilitySwitch;
+  private boolean                   isVisible;
   
   // For smoothing the transforms applied to the model
-  private SmoothMatrix       smoothMatrix;
+  private SmoothMatrix              smoothMatrix;
   
   // Number of times marker for this model not detected.
-  private int                numTimesLost = 0;
+  private int                       numTimesLost = 0;
   
-  protected MarkerModelType markerObjectType;
-  protected Point3d          posInfo;      // Model position.
-  protected EulerAngles      orientation;  // Model orientation.
+  protected MarkerModelType         markerObjectType;
+  protected Point3d                 posInfo;      // Model position.
+  protected EulerAngles             orientation;  // Model orientation.
   
   private boolean                   canAct;
   private boolean                   canCollide;
@@ -178,6 +179,7 @@ public class MarkerModel
     if (canAct)
     {
       diskBoundsRenderer.setVisible (true);
+      characterInfo.setDefending    (false);
     }
     else
     {
@@ -373,6 +375,12 @@ public class MarkerModel
   {
     visibilitySwitch.setWhichChild (Switch.CHILD_NONE);   // make model invisible
     isVisible = false;
+  }
+  
+  public void showModel ()
+  {
+    visibilitySwitch.setWhichChild (Switch.CHILD_ALL);   // make visible
+    isVisible = true;
   }
   
   public boolean isVisible()

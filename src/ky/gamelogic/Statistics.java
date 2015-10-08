@@ -98,6 +98,15 @@ public class Statistics
   }
   
   
+  public void reset ()
+  {
+    this.currentPower   = maximumPower;
+    this.currentAttack  = maximumAttack;
+    this.currentDefense = maximumDefense;
+  }
+  
+  
+  
   @Override
   public String toString ()
   {
