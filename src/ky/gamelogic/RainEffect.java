@@ -58,35 +58,47 @@ implements   Effect
       
       if (isCharacter)
       {
+        Element element        = null;
         boolean isWaterElement = false;
         boolean isFireElement  = false;
+        boolean isMetalElement = false;
         
-        isWaterElement = markerModel.getCharacterInfo ()
-                                    .getElement       ()
-                                    .equals           (Element.WATER);
-        isFireElement  = markerModel.getCharacterInfo ()
-                                    .getElement       ()
-                                    .equals           (Element.FIRE);
+        element        = markerModel.getCharacterInfo ()
+                                    .getElement       ();
+        isWaterElement = element.equals (Element.ICE);
+        isFireElement  = element.equals (Element.FIRE);
+        isMetalElement = element.equals (Element.METAL);
         
         if (isWaterElement)
         {
           int currentPower = 0;
           
-          currentPower = markerModel.getCharacterInfo ().getStatistics ().getCurrentPower ();
+          currentPower = markerModel.getStatistics ().getCurrentPower ();
           currentPower = currentPower * 2;
-          markerModel.getCharacterInfo ().getStatistics ().setCurrentPower (currentPower);
-          markerModel.addProperty      ("frozen");
-          markerModel.update           ();
+          markerModel.getStatistics ().setCurrentPower (currentPower);
+          markerModel.addProperty   ("waterPlus");
+          markerModel.update        ();
         }
         else if (isFireElement)
         {
           int currentPower = 0;
           
-          currentPower = markerModel.getCharacterInfo ().getStatistics ().getCurrentPower ();
+          currentPower = markerModel.getStatistics ().getCurrentPower ();
           currentPower = currentPower / 2;
-          markerModel.getCharacterInfo ().getStatistics ().setCurrentPower (currentPower);
-          markerModel.addProperty      ("extinguished");
-          markerModel.update           ();
+          markerModel.getStatistics ().setCurrentPower (currentPower);
+          markerModel.addProperty   ("extinguished");
+          markerModel.update        ();
+        }
+        else if (isMetalElement)
+        {
+          int currentAttack = 0;
+          
+          currentAttack = markerModel.getStatistics ().getCurrentAttack ();
+          currentAttack = currentAttack / 2;
+          markerModel.getStatistics ().setCurrentAttack  (currentAttack);
+          markerModel.getStatistics ().setCurrentDefense (0);
+          markerModel.addProperty   ("rusty");
+          markerModel.update        ();
         }
       }
     }

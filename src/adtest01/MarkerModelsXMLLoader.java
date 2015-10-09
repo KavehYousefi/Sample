@@ -669,9 +669,9 @@ public class MarkerModelsXMLLoader
       {
         return ky.gamelogic.Element.NONE;
       }
-      case "water" :
+      case "metal" :
       {
-        return ky.gamelogic.Element.WATER;
+        return ky.gamelogic.Element.METAL;
       }
       default :
       {

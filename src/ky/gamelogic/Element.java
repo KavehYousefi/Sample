@@ -4,9 +4,9 @@ package ky.gamelogic;
 public enum Element
 {
   NONE  ("none"),
-  FIRE  ("fice"),
+  FIRE  ("fire"),
   ICE   ("ice"),
-  WATER ("water");
+  METAL ("metal");
   
   
   private String name;

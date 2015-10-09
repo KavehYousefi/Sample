@@ -29,7 +29,7 @@ import org.web3d.j3d.loaders.VRML97Loader;
 import org.web3d.j3d.loaders.X3DLoader;
 
 
-/* Verwendeter Loader: "Xj3D" (Version 1.0).
+/* Utilized Loader: "Xj3D" (Version 1.0).
  */
 @SuppressWarnings ("serial")
 public class ObjectLoader006_XJ3D  extends JApplet

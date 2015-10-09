@@ -2,9 +2,11 @@
 
 <marker-models>
   
+  <!-- DEFINITION OF CHARACTER MARKERS.                               -->
+  
   <model key="bunny"
          name="Bunny">
-    <marker-file path="Data/marker-patterns_003/1.pat" />
+    <marker-file path="Data/bunny.pat" />
     <graphics type="external-model">
       <external-model-file path="models/m111.off"
                            scaling="0.15"                             />
@@ -21,7 +23,7 @@
   
   <model key="snake"
          name="Snake">
-    <marker-file path="Data/marker-patterns_003/2.pat" />
+    <marker-file path="Data/snake.pat" />
     <graphics type="external-model">
       <external-model-file path="models/m85.off"
                            scaling="0.15"                             />
@@ -32,14 +34,14 @@
     <statistics  power="9"
                  attack="7"
                  defense="4"                                          />
-    <element     type="water"                                         />
+    <element     type="ice"                                           />
     <effect      name=""                                              />
     <icon        path="myresources/icon_snake_001.png"                />
   </model>
   
   <model key="bird"
          name="Birdy">
-    <marker-file path="Data/marker-patterns_003/3.pat" />
+    <marker-file path="Data/bird.pat" />
     <graphics type="external-model">
       <external-model-file path="models/m34.off"
                            scaling="0.15"                             />
@@ -57,7 +59,7 @@
   
   <model key="boy"
          name="Boy">
-    <marker-file path="Data/marker-patterns_003/4.pat" />
+    <marker-file path="Data/boy.pat" />
     <graphics type="external-model">
       <external-model-file path="models/Figur_002.wrl"
                            scaling="0.15"                             />
@@ -71,10 +73,43 @@
     <icon        path="myresources/icon_boy_001.png"                  />
   </model>
   
+  <model key="robot"
+         name="Robot">
+    <marker-file path="Data/robot.pat" />
+    <graphics type="external-model">
+      <external-model-file path="models/ED-209/ED-209.obj"
+                           scaling="0.15"                             />
+    </graphics>
+    <marker-type type="character"                                     />
+    <statistics  power="6"
+                 attack="4"
+                 defense="10"                                         />
+    <element     type="metal"                                         />
+    <effect      name=""                                              />
+    <icon        path="myresources/icon_boy_001.png"                  />
+  </model>
+  
+  <model key="starship"
+         name="Starship">
+    <marker-file path="Data/starship.pat" />
+    <graphics type="custom-3d-model">
+      <custom-model name="starship"                                   />
+    </graphics>
+    <marker-type type="character"                                     />
+    <statistics  power="8"
+                 attack="8"
+                 defense="6"                                          />
+    <effect      name=""                                              />
+    <icon        path="myresources/icon_starship_001.png"             />
+  </model>
+  
+  
+  
+  <!-- DEFINITION OF DEFENSE MARKERS.                                -->
   
   <model key="defenseMarker1"
          name="Defense Marker 1">
-    <marker-file path="Data/marker_spikes.pat"                        />
+    <marker-file path="Data/defense1.pat"                        />
     <graphics type="custom-3d-model">
       <custom-model name=""                                           />
     </graphics>
@@ -87,7 +122,7 @@
   
   <model key="defenseMarker2"
          name="Defense Marker 2">
-    <marker-file path="Data/marker_spikes.pat"                        />
+    <marker-file path="Data/defense2.pat"                             />
     <graphics type="custom-3d-model">
       <custom-model name=""                                           />
     </graphics>
@@ -99,9 +134,12 @@
   </model>
   
   
+  
+  <!-- DEFINITION OF EFFECT MARKERS.                                 -->
+  
   <model key="characterSwapper"
          name="Character Swapper">
-    <marker-file path="Data/patt.hiro"                                />
+    <marker-file path="Data/characterSwapper.pat"                     />
     <graphics type="custom-3d-model">
       <custom-model name=""                                           />
     </graphics>
@@ -113,7 +151,7 @@
   
   <model key="statisticsMixer"
          name="Statistics Mixer">
-    <marker-file path="Data/circle_and_ellipse.pat"                   />
+    <marker-file path="Data/statisticsMixer.pat"                      />
     <graphics type="custom-3d-model">
       <custom-model name=""                                           />
     </graphics>
@@ -123,21 +161,22 @@
     <collision   allowed="false"                                      />
   </model>
   
-  <model key="defenseToAttack"
+  <model key="defenseForAttack"
          name="Defense To Attack">
-    <marker-file path="Data/patt.hiro"                                />
+    <marker-file path="Data/defenseForAttack.pat"                     />
     <graphics type="custom-3d-model">
       <custom-model name=""                                           />
     </graphics>
     <marker-type type="effect"                                        />
     <element     type="none"                                          />
-    <effect      name="defenseToAttack"                               />
+    <effect      name="defenseForAttack"                               />
     <collision   allowed="false"                                      />
   </model>
   
+  <!--
   <model key="resurrection"
          name="Resurrection">
-    <marker-file path="Data/patt.hiro"                                />
+    <marker-file path="Data/resurrection.pat"                         />
     <graphics type="custom-3d-model">
       <custom-model name=""                                           />
     </graphics>
@@ -147,4 +186,16 @@
     <collision   allowed="false"                                      />
   </model>
   
+  <model key="undefend"
+         name="Undefend">
+    <marker-file path="Data/undefend.hiro"                            />
+    <graphics type="custom-3d-model">
+      <custom-model name=""                                           />
+    </graphics>
+    <marker-type type="effect"                                        />
+    <element     type="none"                                          />
+    <effect      name="undefend"                                      />
+    <collision   allowed="false"                                      />
+  </model>
+  -->
 </marker-models>

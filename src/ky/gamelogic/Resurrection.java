@@ -33,18 +33,19 @@ implements   Effect
       return;
     }
     
-    multiNyAR.showMessage3D ("RESURRECTION", 1000);
-    
     for (MarkerModel markerModel : detectMarkers.getMarkerModelsForPlayer (multiNyAR.getActivePlayer ()))
     {
       if (! markerModel.getCharacterInfo ().isAlive ())
       {
+        multiNyAR.showMessage3D ("RESURRECTION", 1000);
+        
         markerModel.getCharacterInfo ().setAlive (true);
         markerModel.getStatistics ().reset       ();
         markerModel.setCanAct                    (true);
+        markerModel.addProperty                  ("resurrected");
         markerModel.update                       ();
         isDone = true;
-        break;
+        return;
       }
     }
   }

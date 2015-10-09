@@ -438,11 +438,8 @@ implements   CollisionListener, MarkerModelListener
                ---> behavior  (controls the bg and the tg's of the models)
   */
   {
-    BranchGroup         sceneBG             = null;
-    Background          background          = null;
-//    MarkerModel         cowMarkerModel      = null;
-    MarkerModel         bunnyMarkerModel    = null;
-    MarkerModel         snakeMarkerModel    = null;
+    BranchGroup        sceneBG             = null;
+    Background         background          = null;
     MarkerModelFactory markerObjectFactory = null;
     
     
@@ -474,24 +471,23 @@ implements   CollisionListener, MarkerModelListener
     */
     
     
-    
-    bunnyMarkerModel = markerObjectFactory.getMarkerModelByName ("bunny", Player.SEARCHING_PLAYER);
-//    bunnyMarkerModel.setMarked (true);
-    addAndRegisterMarkerModel (bunnyMarkerModel, sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("bunny", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("starship", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
     addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("bird", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
     
-    snakeMarkerModel = markerObjectFactory.getMarkerModelByName ("snake", Player.SEARCHING_PLAYER);
-    addAndRegisterMarkerModel (snakeMarkerModel, sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("snake", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
     addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("boy", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
     
 //    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("mixer", -1), sceneBG, detectMarkers);
 //    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("snow", -1), sceneBG, detectMarkers);
 //    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("characterSwapper", -1), sceneBG, detectMarkers);
     
-//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseMarker1", Player.PLAYER_1), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseMarker1", Player.PLAYER_1), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseMarker2", Player.PLAYER_2), sceneBG, detectMarkers);
     
-//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseToAttack", Player.NO_PLAYER), sceneBG, detectMarkers);
-    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("resurrection",    Player.NO_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseForAttack", Player.NO_PLAYER), sceneBG, detectMarkers);
+//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("resurrection", Player.NO_PLAYER), sceneBG, detectMarkers);
+//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("undefend",     Player.NO_PLAYER), sceneBG, detectMarkers);
     
     // Create a NyAR multiple marker behavior.
     sceneBG.addChild (new NyARMarkersBehavior (cameraParams, background, detectMarkers));
@@ -588,8 +584,8 @@ implements   CollisionListener, MarkerModelListener
   {
     if (markerModel.getMarkerInfo () != null)
     {
-      sceneBG.addChild        (markerModel.getMoveTg ());
-      detectMarkers.addMarker (markerModel);
+      sceneBG.addChild                   (markerModel.getMoveTg ());
+      detectMarkers.addMarker            (markerModel);
       markerModel.addMarkerModelListener (this);
     }
   }

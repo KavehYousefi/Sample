@@ -139,12 +139,13 @@ extends      JPanel
     statistics = markerModel.getStatistics ();
     text       = String.format
     (
-      "%s %s Pow[%s/%s] | Att[%s/%s] | Def[%s/%s] Status%s %s",
+      "%s %s Pow[%s/%s] | Att[%s/%s] | Def[%s/%s] El[%s] | Status%s %s",
       markerModel.getCharacterInfo ().isAlive () ? "" : DECEASED_CHARACTER,
       markerModel.getModelName     (),
       statistics.getCurrentPower   (), statistics.getMaximumPower   (),
       statistics.getCurrentAttack  (), statistics.getMaximumAttack  (),
       statistics.getCurrentDefense (), statistics.getMaximumDefense (),
+      markerModel.getCharacterInfo ().getElement ().getName         (),
       markerModel.getProperties    (),
       markerModel.getCharacterInfo ().isDefending () ? "(defensive)" : ""
     );
