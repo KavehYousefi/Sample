@@ -1,6 +1,11 @@
 package ky.gamelogic;
 
 
+/**
+ * Holds data important to a character.
+ * 
+ * @author Kaveh Yousefi
+ */
 public class CharacterInfo
 {
   private String     name;

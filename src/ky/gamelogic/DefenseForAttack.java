@@ -5,6 +5,13 @@ import adtest01.MarkerModel;
 import adtest01.MultiNyAR;
 
 
+/**
+ * Each active player's characters' defense points will be added to
+ * their attack, leaving them with more attack strength, but no
+ * defense.
+ * 
+ * @author Kaveh Yousefi
+ */
 public class DefenseForAttack
 implements   Effect
 {
@@ -33,7 +40,7 @@ implements   Effect
       return;
     }
     
-    multiNyAR.showMessage3D ("DEFENSE TO ATTACK", 1000);
+    multiNyAR.showMessage3D ("DEFENSE FOR ATTACK", 1000);
     
     for (MarkerModel markerModel : detectMarkers.getMarkerModelsForPlayer (multiNyAR.getActivePlayer ()))
     {

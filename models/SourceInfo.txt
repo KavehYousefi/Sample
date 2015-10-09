@@ -1,5 +1,14 @@
-File   : "121___fur_texture_by_emilie_stock.jpg"
-Source : "http://emilie-stock.deviantart.com/art/121-Fur-texture-75804274"
+USED PROJECTS (JAVA CODE)
+========================================================================
+The NyARToolkit code is based on Dr. Andrew Davison's project, available under "http://fivedots.coe.psu.ac.th/~ad/jg/ch165/index.html" (older JMF version).
+
+The 3D lathe shape generation is based on Dr. Andrew Davison's project, available under "http://fivedots.coe.psu.ac.th/~ad/jg/ch95/index.html".
+
+
+USED MODELS AND TEXTURES
+========================================================================
+File         : "121___fur_texture_by_emilie_stock.jpg"
+Source       : "http://emilie-stock.deviantart.com/art/121-Fur-texture-75804274"
 
 File         : "medieval-dagger.zip"
 Original name: "8gs1xqlyqa9s-medieval.zip"

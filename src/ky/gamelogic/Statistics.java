@@ -1,6 +1,11 @@
 package ky.gamelogic;
 
 
+/**
+ * Stores a character's power, attack and defense points.
+ * 
+ * @author Kaveh Yousefi
+ */
 public class Statistics
 {
   private int maximumPower;

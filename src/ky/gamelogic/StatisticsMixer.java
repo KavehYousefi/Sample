@@ -9,6 +9,11 @@ import adtest01.MarkerModel;
 import adtest01.MultiNyAR;
 
 
+/**
+ * Mixes all statistic points among all characters.
+ * 
+ * @author Kaveh Yousefi
+ */
 public class StatisticsMixer
 implements   Effect
 {

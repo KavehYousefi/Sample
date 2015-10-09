@@ -5,6 +5,11 @@ import adtest01.MarkerModel;
 import adtest01.MultiNyAR;
 
 
+/**
+ * Randomly resurrects one of the active player's characters.
+ * 
+ * @author Kaveh Yousefi
+ */
 public class Resurrection
 implements   Effect
 {

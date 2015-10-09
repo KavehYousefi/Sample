@@ -77,7 +77,7 @@
          name="Robot">
     <marker-file path="Data/robot.pat" />
     <graphics type="external-model">
-      <external-model-file path="models/ED-209/ED-209.obj"
+      <external-model-file path="models/robot.3ds"
                            scaling="0.15"                             />
     </graphics>
     <marker-type type="character"                                     />
@@ -86,7 +86,7 @@
                  defense="10"                                         />
     <element     type="metal"                                         />
     <effect      name=""                                              />
-    <icon        path="myresources/icon_boy_001.png"                  />
+    <icon        path="myresources/icon_robot_001.png"                />
   </model>
   
   <model key="starship"
@@ -173,7 +173,18 @@
     <collision   allowed="false"                                      />
   </model>
   
-  <!--
+  <model key="rain"
+         name="Rain">
+    <marker-file path="Data/rain.pat"                                 />
+    <graphics type="custom-3d-model">
+      <custom-model name=""                                           />
+    </graphics>
+    <marker-type type="effect"                                        />
+    <element     type="ice"                                           />
+    <effect      name="rain"                                          />
+    <collision   allowed="false"                                      />
+  </model>
+  
   <model key="resurrection"
          name="Resurrection">
     <marker-file path="Data/resurrection.pat"                         />
@@ -188,7 +199,7 @@
   
   <model key="undefend"
          name="Undefend">
-    <marker-file path="Data/undefend.hiro"                            />
+    <marker-file path="Data/undefend.pat"                             />
     <graphics type="custom-3d-model">
       <custom-model name=""                                           />
     </graphics>
@@ -197,5 +208,5 @@
     <effect      name="undefend"                                      />
     <collision   allowed="false"                                      />
   </model>
-  -->
+  
 </marker-models>

@@ -58,7 +58,7 @@ implements   CollisionListener, MarkerModelListener
   
   public MultiNyAR()
   {
-    super ("Multiple markers NyARToolkit Example");
+    super ("ARCs - An NyARToolkit Based Augmented Reality Game");
     
     this.playerManager        = new PlayerManager ();
     this.detectMarkers        = new DetectMarkers (this);
@@ -471,23 +471,22 @@ implements   CollisionListener, MarkerModelListener
     */
     
     
-    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("bunny", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("bunny",    Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
     addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("starship", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
-    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("bird", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
-    
-    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("snake", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
-    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("boy", Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
-    
-//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("mixer", -1), sceneBG, detectMarkers);
-//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("snow", -1), sceneBG, detectMarkers);
-//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("characterSwapper", -1), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("bird",     Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("snake",    Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("boy",      Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("robot",    Player.SEARCHING_PLAYER), sceneBG, detectMarkers);
     
     addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseMarker1", Player.PLAYER_1), sceneBG, detectMarkers);
     addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseMarker2", Player.PLAYER_2), sceneBG, detectMarkers);
     
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("characterSwapper", Player.NO_PLAYER), sceneBG, detectMarkers);
     addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("defenseForAttack", Player.NO_PLAYER), sceneBG, detectMarkers);
-//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("resurrection", Player.NO_PLAYER), sceneBG, detectMarkers);
-//    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("undefend",     Player.NO_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("rain",             Player.NO_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("statisticsMixer",  Player.NO_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("resurrection",     Player.NO_PLAYER), sceneBG, detectMarkers);
+    addAndRegisterMarkerModel (markerObjectFactory.getMarkerModelByName ("undefend",         Player.NO_PLAYER), sceneBG, detectMarkers);
     
     // Create a NyAR multiple marker behavior.
     sceneBG.addChild (new NyARMarkersBehavior (cameraParams, background, detectMarkers));

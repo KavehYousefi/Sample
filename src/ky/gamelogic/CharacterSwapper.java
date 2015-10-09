@@ -9,6 +9,11 @@ import adtest01.MultiNyAR;
 import adtest01.Player;
 
 
+/**
+ * Swaps on of each player's characters with the opponent.
+ * 
+ * @author Kaveh Yousefi
+ */
 public class CharacterSwapper
 implements   Effect
 {

@@ -7,6 +7,12 @@ import adtest01.MarkerModel;
 import adtest01.MultiNyAR;
 
 
+/**
+ * Implements an effect, which sets of hostile characters from
+ * defense to normal mode.
+ * 
+ * @author Kaveh Yousefi
+ */
 public class Undefend
 implements   Effect
 {

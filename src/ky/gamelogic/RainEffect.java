@@ -1,7 +1,5 @@
 package ky.gamelogic;
 
-import javax.swing.JOptionPane;
-
 import com.sun.j3d.utils.geometry.Cylinder;
 
 import adtest01.DetectMarkers;
@@ -11,6 +9,12 @@ import adtest01.TransformHierarchy;
 import ky.appearance.WireframeAppearance;
 
 
+/**
+ * Implements an effect, which strengthens ice-based characters,
+ * weakening fire- and metal-based one.
+ * 
+ * @author Kaveh Yousefi
+ */
 public class RainEffect
 implements   Effect
 {
@@ -104,7 +108,5 @@ implements   Effect
     }
     
     isDone = true;
-    
-    JOptionPane.showMessageDialog (null, "?");
   }
 }
